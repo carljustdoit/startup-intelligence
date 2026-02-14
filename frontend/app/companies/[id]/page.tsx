@@ -76,8 +76,8 @@ export default function CompanyDetail() {
                     </Link>
                     <div className="flex items-center gap-6">
                         <span className={`text-[10px] font-black border px-4 py-2 rounded-xl uppercase tracking-[0.2em] ${company.source === 'YC' ? 'bg-orange-50 text-orange-600 border-orange-100' :
-                                company.source === 'StartX' ? 'bg-cyan-50 text-cyan-600 border-cyan-100' :
-                                    'bg-purple-50 text-purple-600 border-purple-100'
+                            company.source === 'StartX' ? 'bg-cyan-50 text-cyan-600 border-cyan-100' :
+                                'bg-purple-50 text-purple-600 border-purple-100'
                             }`}>
                             Origin: {company.source}
                         </span>
@@ -210,16 +210,26 @@ export default function CompanyDetail() {
 
                                     <div className="mt-16 space-y-4">
                                         {company.website && (
-                                            <a
-                                                href={company.website}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="block w-full text-center bg-indigo-600 hover:bg-slate-900 text-white font-black py-6 rounded-2.5xl transition-all shadow-md hover:shadow-xl uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-2 group"
-                                            >
-                                                <Globe className="w-4 h-4" />
-                                                Initialize Hub
-                                                <ExternalLink className="w-3 h-3 opacity-50 group-hover:opacity-100" />
-                                            </a>
+                                            <div className="space-y-4">
+                                                <a
+                                                    href={company.website}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="block w-full text-center bg-indigo-600 hover:bg-slate-900 text-white font-black py-6 rounded-2.5xl transition-all shadow-md hover:shadow-xl uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-2 group"
+                                                >
+                                                    <Globe className="w-4 h-4" />
+                                                    Initialize Hub
+                                                    <ExternalLink className="w-3 h-3 opacity-50 group-hover:opacity-100" />
+                                                </a>
+                                                <a
+                                                    href={company.website}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="block text-center text-[10px] text-slate-400 font-bold hover:text-indigo-600 transition-colors truncate px-4"
+                                                >
+                                                    {company.website.replace(/^https?:\/\/(www\.)?/, '')}
+                                                </a>
+                                            </div>
                                         )}
                                         <button className="block w-full text-center bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-600 font-black py-6 rounded-2.5xl transition-all border border-slate-200 uppercase tracking-[0.3em] text-[10px]">
                                             Export Dossier

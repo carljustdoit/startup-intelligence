@@ -23,87 +23,137 @@ interface AnalyticsData {
 }
 
 const INDUSTRY_MAP: Record<string, string> = {
-    // Core AI
+    // Core AI & ML
     'AI': 'Core AI & ML',
     'AI & ML': 'Core AI & ML',
     'ARTIFICIAL INTELLIGENCE': 'Core AI & ML',
-    'AIOPS': 'Core AI & ML',
-    'NATURAL LANGUAGE PROCESSING': 'Core AI & ML',
-    'NLP foundations': 'Core AI & ML',
+    'COMPUTER VISION': 'Core AI & ML',
+    'CONVERSATIONAL AI': 'Core AI & ML',
+    'DATA LABELING': 'Core AI & ML',
+    'DATA SCIENCE': 'Core AI & ML',
+    'GENERATIVE AI': 'Core AI & ML',
+    'MACHINE LEARNING': 'Core AI & ML',
+    'REINFORCEMENT LEARNING': 'Core AI & ML',
+    'SPEECH RECOGNITION': 'Core AI & ML',
     'DEEP LEARNING': 'Core AI & ML',
-
-    // Enterprise & SaaS
-    'B2B': 'Enterprise & SaaS',
-    'SAAS': 'Enterprise & SaaS',
-    'HR': 'Enterprise & SaaS',
-    'SALES': 'Enterprise & SaaS',
-    'LEGAL': 'Enterprise & SaaS',
-    'CRM': 'Enterprise & SaaS',
-    'DEVELOPER TOOLS': 'Enterprise & SaaS',
-    'PRODUCTIVITY': 'Enterprise & SaaS',
-    'ENTERPRISE SOFTWARE': 'Enterprise & SaaS',
-    'MARKETING': 'Enterprise & SaaS',
-    'COLLABORATION': 'Enterprise & SaaS',
+    'NLP foundations': 'Core AI & ML',
+    'NATURAL LANGUAGE PROCESSING': 'Core AI & ML',
+    'AIOPS': 'Core AI & ML',
 
     // Fintech
+    'FINTECH': 'Fintech',
+    'FINANCE': 'Fintech',
     'PAYMENTS': 'Fintech',
     'BANKING': 'Fintech',
     'CRYPTO': 'Fintech',
     'INSURANCE': 'Fintech',
     'CONSUMER FINANCE': 'Fintech',
-    'FINANCE': 'Fintech',
-    'FINTECH': 'Fintech',
     'CRYPTOCURRENCY': 'Fintech',
     'WEB3': 'Fintech',
+    'CRYPTO / WEB3': 'Fintech',
+    'BILLING': 'Fintech',
+    'LENDING': 'Fintech',
+    'NEOBANK': 'Fintech',
+    'REGTECH': 'Fintech',
+
+    // Enterprise & SaaS
+    'SAAS': 'Enterprise & SaaS',
+    'B2B': 'Enterprise & SaaS',
+    'DEVELOPER TOOLS': 'Enterprise & SaaS',
+    'ENTERPRISE SOFTWARE': 'Enterprise & SaaS',
+    'CRM': 'Enterprise & SaaS',
+    'ANALYTICS': 'Enterprise & SaaS',
+    'API': 'Enterprise & SaaS',
+    'AUTOMATION': 'Enterprise & SaaS',
+    'BIG DATA': 'Enterprise & SaaS',
+    'CALENDAR': 'Enterprise & SaaS',
+    'CALL CENTER': 'Enterprise & SaaS',
+    'CLOUD COMPUTING': 'Enterprise & SaaS',
+    'COMPLIANCE': 'Enterprise & SaaS',
+    'CUSTOMER SUCCESS': 'Enterprise & SaaS',
+    'CUSTOMER SUPPORT': 'Enterprise & SaaS',
+    'DATA ENGINEERING': 'Enterprise & SaaS',
+    'DESIGN': 'Enterprise & SaaS',
+    'DESIGN TOOLS': 'Enterprise & SaaS',
+    'DOCUMENTS': 'Enterprise & SaaS',
+    'GEOGRAPHIC INFORMATION SYSTEM': 'Enterprise & SaaS',
+    'HR TECH': 'Enterprise & SaaS',
+    'HUMAN RESOURCES': 'Enterprise & SaaS',
+    'LEGAL': 'Enterprise & SaaS',
+    'LEGALTECH': 'Enterprise & SaaS',
+    'MARKETING': 'Enterprise & SaaS',
+    'OPEN SOURCE': 'Enterprise & SaaS',
+    'OPERATIONS': 'Enterprise & SaaS',
+    'PRODUCTIVITY': 'Enterprise & SaaS',
+    'RECRUITING': 'Enterprise & SaaS',
+    'WEB DEVELOPMENT': 'Enterprise & SaaS',
+    'WORKFLOW AUTOMATION': 'Enterprise & SaaS',
+    'COLLABORATION': 'Enterprise & SaaS',
+
+    // Consumer
+    'CONSUMER': 'Consumer',
+    'E-COMMERCE': 'Consumer',
+    'MARKETPLACE': 'Consumer',
+    'MEDIA': 'Consumer',
+    'PODCASTS': 'Consumer',
+    'REAL ESTATE': 'Consumer',
+    'SEARCH': 'Consumer',
+    'SOCIAL NETWORK': 'Consumer',
+    'VIDEO': 'Consumer',
+    'ENTERTAINMENT': 'Consumer',
+    'SOCIAL': 'Consumer',
+    'RETAIL': 'Consumer',
+    'CHAT': 'Consumer',
+    'CONSUMER PRODUCTS': 'Consumer',
 
     // Health & Biotech
     'HEALTHCARE': 'Health & Biotech',
-    'BIOTECH': 'Health & Biotech',
-    'MEDTECH': 'Health & Biotech',
-    'WELLNESS': 'Health & Biotech',
-    'HEALTHTECH': 'Health & Biotech',
     'BIOTECHNOLOGY': 'Health & Biotech',
     'HEALTHCARE IT': 'Health & Biotech',
+    'HEALTHTECH': 'Health & Biotech',
+    'MEDTECH': 'Health & Biotech',
+    'WELLNESS': 'Health & Biotech',
+    'BIOTECH': 'Health & Biotech',
+    'LIVESTOCK HEALTH': 'Health & Biotech',
 
-    // Energy & Climate
-    'CLEAN ENERGY': 'Energy & Climate',
-    'SUSTAINABILITY': 'Energy & Climate',
-    'CLEANTECH': 'Energy & Climate',
-    'FUEL CELLS': 'Energy & Climate',
-    'RENEWABLES': 'Energy & Climate',
-    'ENERGY': 'Energy & Climate',
+    // Industrial & Hard Tech
+    'HARD TECH': 'Industrial & Hard Tech',
+    'HARDWARE': 'Industrial & Hard Tech',
+    'ROBOTICS': 'Industrial & Hard Tech',
+    'IOT': 'Industrial & Hard Tech',
+    'MANUFACTURING': 'Industrial & Hard Tech',
+    'ADVANCED MANUFACTURING': 'Industrial & Hard Tech',
+    'CONSTRUCTION': 'Industrial & Hard Tech',
+    'IOT & ADVANCED MANUFACTURING': 'Industrial & Hard Tech',
 
     // Logistics & Mobility
     'TRANSPORTATION': 'Logistics & Mobility',
     'LOGISTICS': 'Logistics & Mobility',
-    'DRONES': 'Logistics & Mobility',
     'AEROSPACE': 'Logistics & Mobility',
     'AUTOMOTIVE': 'Logistics & Mobility',
+    'DRONES': 'Logistics & Mobility',
     'SUPPLY CHAIN': 'Logistics & Mobility',
+    'MARITIME': 'Logistics & Mobility',
+
+    // Energy & Climate
+    'ENERGY': 'Energy & Climate',
+    'SUSTAINABILITY': 'Energy & Climate',
+    'CLEANTECH': 'Energy & Climate',
+    'RENEWABLES': 'Energy & Climate',
+    'FUEL CELLS': 'Energy & Climate',
+    'SUSTAINABLE AGRICULTURE': 'Energy & Climate',
+    'FOOD & AG': 'Energy & Climate',
+
+    // Education
+    'EDTECH': 'Education',
+    'EDUCATION': 'Education',
+    'AI-ENHANCED LEARNING': 'Education',
 
     // Space
     'SPACE': 'Space',
     'SATELLITE TECH': 'Space',
     'SPACE EXPLORATION': 'Space',
-    'SPACE OPS': 'Space',
-
-    // Industrial & Hard Tech
-    'ROBOTICS': 'Industrial & Hard Tech',
-    'HARDWARE': 'Industrial & Hard Tech',
-    'IOT': 'Industrial & Hard Tech',
-    'MANUFACTURING': 'Industrial & Hard Tech',
-    'HARD TECH': 'Industrial & Hard Tech',
-    'ADVANCED MANUFACTURING': 'Industrial & Hard Tech',
-
-    // Consumer
-    'E-COMMERCE': 'Consumer',
-    'ENTERTAINMENT': 'Consumer',
-    'SOCIAL': 'Consumer',
-    'FOOD TECH': 'Consumer',
-    'CONSUMER': 'Consumer',
-    'RETAIL': 'Consumer',
-    'EDUCATION': 'Consumer',
-    'EDTECH': 'Consumer'
+    'SPACE OPS': 'Space'
 };
 
 const getCategory = (industry: string | null): string => {
@@ -113,7 +163,12 @@ const getCategory = (industry: string | null): string => {
     return INDUSTRY_MAP[primary] || 'General';
 };
 
-const COLORS = ['#7c3aed', '#0891b2', '#2563eb', '#f59e0b', '#10b981', '#ef4444', '#ec4899'];
+const COLORS = [
+    '#7c3aed', '#0891b2', '#2563eb', '#f59e0b', '#10b981', '#ef4444', '#ec4899',
+    '#8b5cf6', '#06b6d4', '#3b82f6', '#fbbf24', '#34d399', '#f87171', '#f472b6',
+    '#a78bfa', '#22d3ee', '#60a5fa', '#fb923c', '#4ade80', '#fb7185', '#fb923c',
+    '#c084fc', '#67e8f9', '#93c5fd', '#fdba74', '#86efac', '#fda4af', '#fda4af'
+];
 
 export default function Analytics() {
     const [data, setData] = useState<AnalyticsData | null>(null);
@@ -235,9 +290,18 @@ export default function Analytics() {
 
     const industryData = Object.entries(industryDataRaw)
         .sort((a, b) => b[1] - a[1])
+        .filter(([name]) => name.toUpperCase() !== (activeCategory || '').toUpperCase()) // Remove parent slice
         .map(([name, value]) => ({ name, value }));
 
     const chartData = viewMode === 'category' ? categoryData : industryData;
+
+    const handleLegendClick = (props: any) => {
+        const { value } = props;
+        const index = chartData.findIndex(d => d.name === value);
+        if (index !== -1) {
+            onPieClick(null as any, index);
+        }
+    };
 
     return (
         <main className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 selection:bg-indigo-100">
@@ -341,18 +405,29 @@ export default function Analytics() {
                                     <Legend
                                         verticalAlign="bottom"
                                         iconType="circle"
+                                        onClick={handleLegendClick}
                                         wrapperStyle={{
                                             paddingTop: '40px',
                                             position: 'relative',
                                             overflowY: 'auto',
                                             maxHeight: '180px',
                                             width: '100%',
-                                            scrollbarWidth: 'none'
+                                            scrollbarWidth: 'none',
+                                            cursor: 'pointer'
                                         }}
-                                        formatter={(value) => <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{value}</span>}
+                                        formatter={(value) => <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-indigo-600 transition-colors">{value}</span>}
                                     />
                                 </PieChart>
                             </ResponsiveContainer>
+                            {viewMode === 'industry' && (
+                                <button
+                                    onClick={() => { setViewMode('category'); setActiveCategory(null); setSelectedLabel(null); setIndustryCompanies([]); }}
+                                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full flex flex-col items-center justify-center group z-10"
+                                >
+                                    <ArrowLeft className="w-4 h-4 text-slate-300 group-hover:text-indigo-600 transition-all group-hover:-translate-x-1" />
+                                    <span className="text-[8px] font-black text-slate-300 group-hover:text-indigo-600 uppercase tracking-[0.2em] mt-1">Exit</span>
+                                </button>
+                            )}
                         </div>
                         <div className="text-center mt-auto pt-10">
                             <p className="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">
