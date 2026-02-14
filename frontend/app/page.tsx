@@ -137,8 +137,8 @@ export default function Home() {
                 onClick={handleRefresh}
                 disabled={scrapeStatus.is_running}
                 className={`px-8 py-4 rounded-2.5xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 transition-all border shadow-sm ${scrapeStatus.is_running
-                    ? 'bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed'
-                    : 'bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-700 hover:shadow-indigo-200 hover:translate-y-[-2px]'
+                  ? 'bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed'
+                  : 'bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-700 hover:shadow-indigo-200 hover:translate-y-[-2px]'
                   }`}
               >
                 <Zap className={`w-4 h-4 ${scrapeStatus.is_running ? 'animate-pulse' : ''}`} />
@@ -280,10 +280,14 @@ export default function Home() {
                                 <div className="font-black text-slate-900 group-hover:text-indigo-600 transition-colors text-lg tracking-tight">{company.name}</div>
                                 <div className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-widest truncate max-w-xs">{company.one_liner}</div>
                               </td>
-                              <td className="px-10 py-8">
-                                <span className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest border border-slate-200">
-                                  {company.batch}
-                                </span>
+                              <td className="py-6 px-4">
+                                {company.batch && (
+                                  <div className="flex flex-wrap gap-1">
+                                    <span className="px-2 py-0.5 rounded-md bg-slate-100 text-[10px] font-black text-slate-500 uppercase tracking-tighter whitespace-nowrap">
+                                      {company.batch}
+                                    </span>
+                                  </div>
+                                )}
                               </td>
                               <td className="px-10 py-8">
                                 <div className="text-sm text-slate-500 font-bold uppercase tracking-tight">{company.industry || "General"}</div>
@@ -302,8 +306,8 @@ export default function Home() {
                               </td>
                               <td className="px-10 py-8">
                                 <div className={`text-[10px] font-black uppercase tracking-[0.2em] ${company.source === 'YC' ? 'text-orange-500' :
-                                    company.source === 'StartX' ? 'text-cyan-500' :
-                                      'text-purple-500'
+                                  company.source === 'StartX' ? 'text-cyan-500' :
+                                    'text-purple-500'
                                   }`}>{company.source}</div>
                               </td>
                             </tr>

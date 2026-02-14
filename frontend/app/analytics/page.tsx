@@ -148,9 +148,13 @@ export default function Analytics() {
 
             let filtered = [];
             if (mode === 'industry') {
-                filtered = result.items.filter((c: Company) =>
-                    c.industry?.toUpperCase().includes(label.toUpperCase())
-                );
+                const isGeneral = label.toUpperCase() === 'GENERAL';
+                filtered = result.items.filter((c: Company) => {
+                    if (isGeneral) {
+                        return !c.industry || c.industry.toUpperCase().includes('GENERAL');
+                    }
+                    return c.industry?.toUpperCase().includes(label.toUpperCase());
+                });
             } else {
                 filtered = result.items.filter((c: Company) =>
                     getCategory(c.industry) === label
@@ -262,10 +266,10 @@ export default function Analytics() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
                     {/* Interactive Pie Chart */}
-                    <div className="glass p-12 rounded-[3.5rem] border-slate-200 bg-white/60 min-h-[600px] flex flex-col justify-center relative transition-all duration-500">
-                        <div className="absolute top-8 left-12">
+                    <div className="glass p-12 rounded-[3.5rem] border-slate-200 bg-white/60 min-h-[600px] flex flex-col relative transition-all duration-500">
+                        <div className="mb-12">
                             <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-2 flex items-center gap-2">
                                 <Target className="w-4 h-4 text-indigo-500" />
                                 {viewMode === 'category' ? 'Market Overview' : `${activeCategory} Breakdown`}
@@ -273,7 +277,7 @@ export default function Analytics() {
                             <p className="text-slate-900 font-black text-xl">Interactive Pie Distribution</p>
                         </div>
 
-                        <div className="h-[400px] w-full mt-12">
+                        <div className="h-[400px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
