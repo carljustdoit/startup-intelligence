@@ -61,13 +61,20 @@ class YCScraper(BaseScraper):
             await page.goto(url, wait_until="networkidle", timeout=15000)
             
             # Website
-            web_el = page.locator('a[href^="http"]').filter(has_text="Visit Website").first
+            web_el = page.locator('a[aria-label="Company website"]').first
+            if await web_el.count() == 0:
+                web_el = page.locator('div.space-x-3 a.whitespace-nowrap').first
+            if await web_el.count() == 0:
+                web_el = page.locator('a[href^="http"]').filter(has_text="Visit Website").first
+            
             website = await web_el.get_attribute("href") if await web_el.count() > 0 else None
+            if website and any(x in website for x in ["ycombinator.com", "linkedin.com", "twitter.com", "facebook.com"]):
+                website = None
 
-            # Logo
-            logo_el = page.locator('div.flex.flex-row.items-start.gap-x-4 img.rounded-xl').first
+            # Logo (High Quality)
+            logo_el = page.locator('div.h-32.w-32 img').first
             if await logo_el.count() == 0:
-                logo_el = page.locator('aside img.rounded-xl').first
+                logo_el = page.locator('img.rounded-xl').first
             logo_url = await logo_el.get_attribute("src") if await logo_el.count() > 0 else None
 
             # One-liner & Industry

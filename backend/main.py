@@ -53,7 +53,7 @@ async def run_scrapers_task():
     try:
         # 1. YC Scraper
         SCRAPE_STATUS["current_step"] = "Scraping YC Batches..."
-        yc = YCScraper(db, batches=["Summer 2026", "Spring 2026", "Winter 2026", "Summer 2025", "Winter 2025"])
+        yc = YCScraper(db, batches=["Summer 2024"])
         await yc.run()
         SCRAPE_STATUS["progress"] = 25
         
@@ -144,14 +144,29 @@ def get_analytics(db: Session = Depends(get_db)):
             
     # Flatten for frontend
     # [{year: 2024, verticals: {AI: 10, SaaS: 5}}]
-    result = []
+    by_year = []
     for year, verticals in sorted(data.items(), reverse=True):
-        result.append({
+        by_year.append({
             "year": year,
             "verticals": verticals
         })
+
+    # Consolidated stats for Pie Charts
+    total_companies = len(companies)
+    industry_counts = {}
+    source_counts = {}
+    for c in companies:
+        v_list = [v.strip() for v in (c.industry or "General").split(",")]
+        for v in v_list:
+            industry_counts[v] = industry_counts.get(v, 0) + 1
+        source_counts[c.source] = source_counts.get(c.source, 0) + 1
         
-    return result
+    return {
+        "total_companies": total_companies,
+        "industry_distribution": [{"industry": k, "count": v} for k, v in sorted(industry_counts.items(), key=lambda x: x[1], reverse=True)],
+        "source_distribution": [{"source": k, "count": v} for k, v in source_counts.items()],
+        "by_year": by_year
+    }
 
 @app.get("/companies", response_model=schemas.PaginatedCompanies)
 async def get_companies(

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import CompanyCard from '../components/CompanyCard';
+import { Search, SlidersHorizontal, LayoutGrid, List, Zap, BarChart3 } from 'lucide-react';
 
 interface Company {
   id: number;
@@ -100,66 +101,66 @@ export default function Home() {
 
   const SortIcon = ({ column }: { column: string }) => {
     if (sortBy !== column) return <span className="ml-1 opacity-20">↕</span>;
-    return <span className="ml-1 text-cyan-400">{order === 'asc' ? '↑' : '↓'}</span>;
+    return <span className="ml-1 text-indigo-600">{order === 'asc' ? '↑' : '↓'}</span>;
   };
 
   return (
-    <main className="min-h-screen pb-20 selection:bg-cyan-500/30">
+    <main className="min-h-screen pb-20 selection:bg-indigo-100">
       {/* Header Section */}
-      <div className="py-20 relative overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-indigo-500/10 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+      <div className="py-24 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-indigo-500/5 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center text-center space-y-8">
-            <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full glass border-white/5 text-[10px] font-black uppercase tracking-[0.4em] text-cyan-400 animate-pulse">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)]"></span>
-              <span>Next-Gen Intelligence Sync</span>
+            <div className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-full glass border-slate-200 text-[10px] font-black uppercase tracking-[0.4em] text-indigo-600 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></span>
+              <span>Proprietary Intel Stream</span>
             </div>
 
-            <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-white">
-              Intelligence <span className="text-gradient">Pool.</span>
+            <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-slate-900">
+              Intelligence <span className="text-indigo-600">Pool.</span>
             </h1>
 
-            <p className="max-w-2xl text-xl text-gray-400 font-medium leading-relaxed">
-              Synthesizing real-time data flow from the world's most aggressive capital silos.
-              Premium VC forensics for the next generation.
+            <p className="max-w-2xl text-xl text-slate-500 font-medium leading-relaxed">
+              Tracking high-velocity signals across global venture ecosystems.
+              Synthesized forensics for professional capital allocators.
             </p>
 
-            <div className="flex flex-wrap justify-center gap-6 pt-8">
+            <div className="flex flex-wrap justify-center gap-4 pt-8">
               <Link
                 href="/analytics"
-                className="px-8 py-4 glass glass-hover rounded-2xl text-white font-black text-xs uppercase tracking-[0.2em] flex items-center gap-3"
+                className="px-8 py-4 glass glass-hover rounded-2.5xl text-slate-900 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 border-slate-200"
               >
-                <span className="p-2 rounded-lg bg-purple-500/20 text-purple-400">📊</span>
+                <BarChart3 className="w-4 h-4 text-indigo-500" />
                 Ecosystem Metrics
               </Link>
               <button
                 onClick={handleRefresh}
                 disabled={scrapeStatus.is_running}
-                className={`px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center gap-3 transition-all ${scrapeStatus.is_running
-                    ? 'bg-white/5 text-gray-500 border border-white/5 cursor-not-allowed'
-                    : 'bg-white text-black hover:bg-cyan-400 hover:shadow-[0_0_30px_rgba(34,211,238,0.3)]'
+                className={`px-8 py-4 rounded-2.5xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 transition-all border shadow-sm ${scrapeStatus.is_running
+                    ? 'bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed'
+                    : 'bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-700 hover:shadow-indigo-200 hover:translate-y-[-2px]'
                   }`}
               >
-                <span className={`p-2 rounded-lg ${scrapeStatus.is_running ? 'bg-gray-800' : 'bg-black/5'} ${scrapeStatus.is_running ? 'animate-spin' : ''}`}>⚡</span>
-                {scrapeStatus.is_running ? 'Syncing...' : 'Force Intelligence Sync'}
+                <Zap className={`w-4 h-4 ${scrapeStatus.is_running ? 'animate-pulse' : ''}`} />
+                {scrapeStatus.is_running ? 'Syncing Intelligence...' : 'Initiate Intel Harvest'}
               </button>
             </div>
           </div>
 
           {/* Scrape Progress */}
           {scrapeStatus.is_running && (
-            <div className="mt-16 max-w-3xl mx-auto">
-              <div className="glass p-8 rounded-[2rem] border-cyan-500/20 shadow-[0_0_50px_rgba(6,182,212,0.1)]">
+            <div className="mt-16 max-w-2xl mx-auto px-4">
+              <div className="glass p-10 rounded-[2.5rem] border-indigo-100 shadow-xl bg-white/60">
                 <div className="flex justify-between items-center mb-6">
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-black text-cyan-400 uppercase tracking-[0.3em]">Neural Status</span>
-                    <span className="text-white font-bold">{scrapeStatus.current_step}</span>
+                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em]">Stream Status</span>
+                    <span className="text-slate-900 font-bold">{scrapeStatus.current_step}</span>
                   </div>
-                  <span className="text-3xl font-black text-white">{scrapeStatus.progress}%</span>
+                  <span className="text-3xl font-black text-slate-900">{scrapeStatus.progress}%</span>
                 </div>
-                <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden border border-white/5">
+                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200 p-[2px]">
                   <div
-                    className="bg-gradient-to-r from-cyan-500 to-indigo-600 h-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(34,211,238,0.5)]"
+                    className="bg-indigo-600 h-full rounded-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(99,102,241,0.3)]"
                     style={{ width: `${scrapeStatus.progress}%` }}
                   ></div>
                 </div>
@@ -168,43 +169,44 @@ export default function Home() {
           )}
 
           {/* Controls */}
-          <div className="mt-20 flex flex-col md:flex-row gap-6 p-2 bg-white/5 rounded-[3rem] border border-white/5 backdrop-blur-xl">
+          <div className="mt-20 flex flex-col md:flex-row gap-4 p-3 bg-white/60 rounded-[3rem] border border-slate-200 backdrop-blur-2xl shadow-sm">
             <div className="relative flex-1">
-              <span className="absolute left-6 top-1/2 -translate-y-1/2 text-xl opacity-50">🔍</span>
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300" />
               <input
                 type="text"
-                placeholder="Query companies, problems, founders, or verticals..."
+                placeholder="Analyze companies, problems, founders, or sectors..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-16 pr-8 py-6 bg-transparent border-none focus:ring-0 outline-none text-white font-medium placeholder:text-gray-600 text-lg"
+                className="w-full pl-16 pr-8 py-5 bg-transparent border-none focus:ring-0 outline-none text-slate-900 font-medium placeholder:text-slate-300 text-lg"
               />
             </div>
-            <div className="flex gap-4 p-2">
-              <select
-                value={source}
-                onChange={(e) => setSource(e.target.value)}
-                className="px-8 py-4 bg-white/5 rounded-2xl outline-none border border-white/10 font-black text-[10px] uppercase tracking-widest text-white cursor-pointer hover:bg-white/10 transition-all appearance-none"
-              >
-                <option value="All">All Sources</option>
-                <option value="YC">Y Combinator</option>
-                <option value="StartX">StartX</option>
-                <option value="AV">Alumni Ventures</option>
-              </select>
+            <div className="flex gap-4 p-1">
+              <div className="relative">
+                <SlidersHorizontal className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                <select
+                  value={source}
+                  onChange={(e) => setSource(e.target.value)}
+                  className="pl-14 pr-10 py-4 bg-white rounded-2xl outline-none border border-slate-200 font-black text-[10px] uppercase tracking-widest text-slate-700 cursor-pointer hover:border-indigo-400 transition-all appearance-none shadow-sm"
+                >
+                  <option value="All">Global Source</option>
+                  <option value="YC">Y Combinator</option>
+                  <option value="StartX">StartX</option>
+                  <option value="AV">Alumni Ventures</option>
+                </select>
+              </div>
 
-              <div className="h-full w-[1px] bg-white/10 mx-2"></div>
-
-              <div className="flex p-1 bg-black/40 rounded-xl border border-white/5">
+              <div className="flex p-1 bg-slate-100 rounded-2xl border border-slate-200">
                 <button
                   onClick={() => setViewMode('table')}
-                  className={`px-4 py-2 rounded-lg text-[10px] font-black tracking-widest uppercase transition-all ${viewMode === 'table' ? 'bg-white text-black' : 'text-gray-500 hover:text-white'}`}
+                  className={`p-3 rounded-xl transition-all ${viewMode === 'table' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400 hover:text-slate-600'}`}
                 >
-                  List
+                  <List className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setViewMode('cards')}
-                  className={`px-4 py-2 rounded-lg text-[10px] font-black tracking-widest uppercase transition-all ${viewMode === 'cards' ? 'bg-white text-black' : 'text-gray-500 hover:text-white'}`}
+                  className={`p-3 rounded-xl transition-all ${viewMode === 'cards' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400 hover:text-slate-600'}`}
                 >
-                  Grid
+                  <LayoutGrid className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -215,23 +217,23 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-40">
-            <div className="w-16 h-16 border-t-2 border-r-2 border-cyan-400 rounded-full animate-spin mb-8 shadow-[0_0_20px_rgba(34,211,238,0.2)]"></div>
-            <p className="text-gray-500 font-black uppercase tracking-[0.4em] text-xs">Deciphering Intelligence Stream...</p>
+            <div className="w-12 h-12 border-t-2 border-r-2 border-indigo-600 rounded-full animate-spin mb-8"></div>
+            <p className="text-slate-400 font-black uppercase tracking-[0.4em] text-[10px]">Synchronizing Local Intelligence Database...</p>
           </div>
         ) : (
           <>
             {companies.length === 0 ? (
-              <div className="text-center py-32 glass rounded-[3rem] border-dashed">
-                <div className="text-6xl mb-8 opacity-20">📡</div>
-                <h3 className="text-2xl font-black text-white mb-2">Zero Signals Found</h3>
-                <p className="text-gray-500 font-medium">No results match your current spectral parameters.</p>
+              <div className="text-center py-32 glass rounded-[3rem] border-dashed border-slate-200 bg-white/40">
+                <div className="text-5xl mb-8 grayscale opacity-50">📡</div>
+                <h3 className="text-2xl font-black text-slate-900 mb-2">Null Sector Signal</h3>
+                <p className="text-slate-400 font-medium">Reset your parameters to restore environmental telemetry.</p>
               </div>
             ) : (
               <>
                 {viewMode === 'cards' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                     {companies.map((company) => (
-                      <Link key={company.id} href={`/companies/${company.id}`} className="block h-full cursor-none-custom">
+                      <Link key={company.id} href={`/companies/${company.id}`} className="block h-full group">
                         <CompanyCard company={company} />
                       </Link>
                     ))}
@@ -239,89 +241,96 @@ export default function Home() {
                 )}
 
                 {viewMode === 'table' && (
-                  <div className="glass rounded-[2.5rem] overflow-x-auto border border-white/5">
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr className="border-b border-white/5">
-                          <th className="px-10 py-8 text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">Platform</th>
-                          <th className="px-10 py-8 text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] cursor-pointer group" onClick={() => handleSort('name')}>
-                            Startup <SortIcon column="name" />
-                          </th>
-                          <th className="px-10 py-8 text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] cursor-pointer group" onClick={() => handleSort('batch')}>
-                            Batch <SortIcon column="batch" />
-                          </th>
-                          <th className="px-10 py-8 text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">Industry</th>
-                          <th className="px-10 py-8 text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">Digital Hub</th>
-                          <th className="px-10 py-8 text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">Source</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5">
-                        {companies.map((company) => (
-                          <tr
-                            key={company.id}
-                            className="hover:bg-white/[0.02] transition-colors group cursor-pointer"
-                            onClick={() => window.location.href = `/companies/${company.id}`}
-                          >
-                            <td className="px-10 py-8">
-                              {company.logo_url ? (
-                                <img src={company.logo_url} alt={company.name} className="w-10 h-10 rounded-lg object-contain bg-white/5 border border-white/10" />
-                              ) : (
-                                <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-white/20 font-black text-lg border border-white/10 border-dashed">
-                                  {company.name[0]}
-                                </div>
-                              )}
-                            </td>
-                            <td className="px-10 py-8">
-                              <div className="font-black text-white group-hover:text-cyan-400 transition-colors text-lg tracking-tight">{company.name}</div>
-                              <div className="text-[10px] text-gray-600 font-bold mt-1 uppercase tracking-widest truncate max-w-xs">{company.one_liner}</div>
-                            </td>
-                            <td className="px-10 py-8">
-                              <span className="px-3 py-1.5 rounded-lg bg-white/5 text-gray-400 text-[10px] font-black uppercase tracking-widest border border-white/5">
-                                {company.batch}
-                              </span>
-                            </td>
-                            <td className="px-10 py-8">
-                              <div className="text-sm text-gray-500 font-bold uppercase tracking-tighter">{company.industry || "General"}</div>
-                            </td>
-                            <td className="px-10 py-8">
-                              {company.website && (
-                                <a
-                                  href={company.website}
-                                  target="_blank"
-                                  className="text-[10px] font-black text-cyan-500 hover:text-cyan-400 transition-colors underline decoration-cyan-500/30 underline-offset-4"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  Visit Domain
-                                </a>
-                              )}
-                            </td>
-                            <td className="px-10 py-8">
-                              <div className="text-[10px] font-black text-purple-400/60 uppercase tracking-[0.2em]">{company.source}</div>
-                            </td>
+                  <div className="glass rounded-[2.5rem] overflow-hidden border-slate-200 shadow-sm bg-white/40">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="border-b border-slate-100 bg-slate-50/50">
+                            <th className="px-10 py-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Identity</th>
+                            <th className="px-10 py-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] cursor-pointer group" onClick={() => handleSort('name')}>
+                              Startup <SortIcon column="name" />
+                            </th>
+                            <th className="px-10 py-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] cursor-pointer group" onClick={() => handleSort('batch')}>
+                              Cohort <SortIcon column="batch" />
+                            </th>
+                            <th className="px-10 py-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Sector</th>
+                            <th className="px-10 py-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Network Hub</th>
+                            <th className="px-10 py-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Origin</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {companies.map((company) => (
+                            <tr
+                              key={company.id}
+                              className="hover:bg-white/60 transition-colors group cursor-pointer"
+                              onClick={() => window.location.href = `/companies/${company.id}`}
+                            >
+                              <td className="px-10 py-8">
+                                {company.logo_url ? (
+                                  <div className="w-12 h-12 rounded-xl bg-white border border-slate-100 p-2 shadow-sm">
+                                    <img src={company.logo_url} alt={company.name} className="w-full h-full object-contain" />
+                                  </div>
+                                ) : (
+                                  <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 font-black text-lg border border-slate-100 border-dashed">
+                                    {company.name[0]}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-10 py-8">
+                                <div className="font-black text-slate-900 group-hover:text-indigo-600 transition-colors text-lg tracking-tight">{company.name}</div>
+                                <div className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-widest truncate max-w-xs">{company.one_liner}</div>
+                              </td>
+                              <td className="px-10 py-8">
+                                <span className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest border border-slate-200">
+                                  {company.batch}
+                                </span>
+                              </td>
+                              <td className="px-10 py-8">
+                                <div className="text-sm text-slate-500 font-bold uppercase tracking-tight">{company.industry || "General"}</div>
+                              </td>
+                              <td className="px-10 py-8">
+                                {company.website && (
+                                  <a
+                                    href={company.website}
+                                    target="_blank"
+                                    className="inline-flex items-center gap-2 text-[10px] font-black text-indigo-600 hover:text-indigo-800 transition-colors underline decoration-indigo-200 underline-offset-4"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    Visit Web
+                                  </a>
+                                )}
+                              </td>
+                              <td className="px-10 py-8">
+                                <div className={`text-[10px] font-black uppercase tracking-[0.2em] ${company.source === 'YC' ? 'text-orange-500' :
+                                    company.source === 'StartX' ? 'text-cyan-500' :
+                                      'text-purple-500'
+                                  }`}>{company.source}</div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 )}
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="mt-20 flex justify-center items-center gap-8">
+                  <div className="mt-20 flex justify-center items-center gap-10">
                     <button
                       onClick={() => setPage(Math.max(1, page - 1))}
                       disabled={page === 1}
-                      className="w-14 h-14 flex items-center justify-center glass rounded-2xl disabled:opacity-20 hover:border-cyan-500/50 transition-all text-xl"
+                      className="w-14 h-14 flex items-center justify-center glass rounded-2.5xl disabled:opacity-20 hover:border-indigo-400 hover:text-indigo-600 transition-all text-xl shadow-sm"
                     >
                       ←
                     </button>
-                    <div className="text-gray-500 font-black tracking-[0.4em] uppercase text-[10px]">
-                      Sector <span className="text-white text-lg mx-2">{page}</span> / {totalPages}
+                    <div className="text-slate-400 font-black tracking-[0.5em] uppercase text-[10px]">
+                      Phase <span className="text-slate-900 text-xl mx-2">{page}</span> / {totalPages}
                     </div>
                     <button
                       onClick={() => setPage(Math.min(totalPages, page + 1))}
                       disabled={page === totalPages}
-                      className="w-14 h-14 flex items-center justify-center glass rounded-2xl disabled:opacity-20 hover:border-cyan-500/50 transition-all text-xl"
+                      className="w-14 h-14 flex items-center justify-center glass rounded-2.5xl disabled:opacity-20 hover:border-indigo-400 hover:text-indigo-600 transition-all text-xl shadow-sm"
                     >
                       →
                     </button>
