@@ -166,17 +166,36 @@ export default function Analytics() {
         }
     };
 
+    const handleCategorySelection = (category: string) => {
+        // Redundant check: if all sub-items would map to "Other"
+        const rawMatches = data?.industry_distribution.filter(item => getCategory(item.industry) === category) || [];
+        const uniqueSubs = new Set(rawMatches.map(m => {
+            const n = m.industry || 'Other';
+            const isRedundant = n.toUpperCase() === 'GENERAL' || n.toUpperCase() === 'OTHER' || n.toUpperCase() === category.toUpperCase();
+            return isRedundant ? 'Other' : n;
+        }));
+
+        if (uniqueSubs.size === 1 && uniqueSubs.has('Other')) {
+            // Flatten: go straight to dossier for simple categories
+            setViewMode('category');
+            setActiveCategory(category);
+            setSelectedLabel(category);
+            fetchCategoryCompanies(category, 'category');
+        } else {
+            setViewMode('industry');
+            setActiveCategory(category);
+            setActiveIndex(null);
+            setSelectedLabel(category);
+            setIndustryCompanies([]);
+        }
+    };
+
     const onPieClick = (_: any, index: number) => {
         if (!data) return;
 
         if (viewMode === 'category') {
             const category = categoryData[index].name;
-            setViewMode('industry');
-            setActiveCategory(category);
-            setActiveIndex(null); // Reset for sub-view
-            setSelectedLabel(category);
-            // Don't fetch companies yet, just show industry sub-breakdown
-            setIndustryCompanies([]);
+            handleCategorySelection(category);
         } else {
             const industry = industryData[index].name;
             setActiveIndex(index);
@@ -203,13 +222,20 @@ export default function Analytics() {
         .sort((a, b) => b[1] - a[1])
         .map(([name, value]) => ({ name, value }));
 
-    // Industries within the active category
-    const industryData = data?.industry_distribution
+    // Industries within the active category - Normalized to "Other" if redundant
+    const industryDataRaw: Record<string, number> = {};
+    data?.industry_distribution
         .filter(item => getCategory(item.industry) === activeCategory)
-        .map(item => ({
-            name: item.industry || 'General',
-            value: item.count
-        })) || [];
+        .forEach(item => {
+            const rawName = item.industry || 'Other';
+            const isRedundant = rawName.toUpperCase() === 'GENERAL' || rawName.toUpperCase() === 'OTHER' || rawName.toUpperCase() === (activeCategory || '').toUpperCase();
+            const name = isRedundant ? 'Other' : rawName;
+            industryDataRaw[name] = (industryDataRaw[name] || 0) + item.count;
+        });
+
+    const industryData = Object.entries(industryDataRaw)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, value]) => ({ name, value }));
 
     const chartData = viewMode === 'category' ? categoryData : industryData;
 
@@ -268,7 +294,7 @@ export default function Analytics() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
                     {/* Interactive Pie Chart */}
-                    <div className="glass p-12 rounded-[3.5rem] border-slate-200 bg-white/60 min-h-[600px] flex flex-col relative transition-all duration-500">
+                    <div className="glass p-12 rounded-[3.5rem] border-slate-200 bg-white/60 min-h-[750px] flex flex-col relative transition-all duration-500 overflow-hidden">
                         <div className="mb-12">
                             <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-2 flex items-center gap-2">
                                 <Target className="w-4 h-4 text-indigo-500" />
@@ -277,7 +303,7 @@ export default function Analytics() {
                             <p className="text-slate-900 font-black text-xl">Interactive Pie Distribution</p>
                         </div>
 
-                        <div className="h-[400px] w-full">
+                        <div className="h-[430px] w-full shrink-0">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
@@ -314,14 +340,21 @@ export default function Analytics() {
                                     />
                                     <Legend
                                         verticalAlign="bottom"
-                                        height={36}
                                         iconType="circle"
+                                        wrapperStyle={{
+                                            paddingTop: '40px',
+                                            position: 'relative',
+                                            overflowY: 'auto',
+                                            maxHeight: '180px',
+                                            width: '100%',
+                                            scrollbarWidth: 'none'
+                                        }}
                                         formatter={(value) => <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{value}</span>}
                                     />
                                 </PieChart>
                             </ResponsiveContainer>
                         </div>
-                        <div className="text-center mt-10">
+                        <div className="text-center mt-auto pt-10">
                             <p className="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">
                                 {viewMode === 'category' ? 'Click category to subdivide sectors' : 'Select industry to view company list'}
                             </p>
