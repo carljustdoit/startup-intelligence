@@ -125,6 +125,12 @@ def get_analytics(db: Session = Depends(get_db)):
             if match:
                 year = match.group(0)
         
+        # Fallback for AV: look in logo_url
+        if not year and c.source == "AV" and c.logo_url:
+            match = re.search(r'/20(\d{2})/', c.logo_url)
+            if match:
+                year = f"20{match.group(1)}"
+        
         if not year:
             year = "Unknown"
             

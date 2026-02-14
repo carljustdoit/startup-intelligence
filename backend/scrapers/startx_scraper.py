@@ -42,6 +42,8 @@ class StartXScraper(BaseScraper):
                     name = None
                     img = card.locator('img').first
                     logo_url = await img.get_attribute("src") if await img.count() > 0 else None
+                    if logo_url and logo_url.startswith('/'):
+                        logo_url = f"https://startx.com{logo_url}"
                     if await img.count() > 0:
                         name = await img.get_attribute("alt")
                     

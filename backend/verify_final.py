@@ -1,5 +1,9 @@
-from backend.database import SessionLocal
-from backend.models import Company, Founder
+try:
+    from database import SessionLocal
+    from models import Company, Founder
+except ImportError:
+    from .database import SessionLocal
+    from .models import Company, Founder
 
 def verify_data():
     db = SessionLocal()
