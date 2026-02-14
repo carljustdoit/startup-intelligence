@@ -22,15 +22,107 @@ interface AnalyticsData {
     source_distribution: { source: string; count: number }[];
 }
 
+const INDUSTRY_MAP: Record<string, string> = {
+    // Core AI
+    'AI': 'Core AI & ML',
+    'AI & ML': 'Core AI & ML',
+    'ARTIFICIAL INTELLIGENCE': 'Core AI & ML',
+    'AIOPS': 'Core AI & ML',
+    'NATURAL LANGUAGE PROCESSING': 'Core AI & ML',
+    'NLP foundations': 'Core AI & ML',
+    'DEEP LEARNING': 'Core AI & ML',
+
+    // Enterprise & SaaS
+    'B2B': 'Enterprise & SaaS',
+    'SAAS': 'Enterprise & SaaS',
+    'HR': 'Enterprise & SaaS',
+    'SALES': 'Enterprise & SaaS',
+    'LEGAL': 'Enterprise & SaaS',
+    'CRM': 'Enterprise & SaaS',
+    'DEVELOPER TOOLS': 'Enterprise & SaaS',
+    'PRODUCTIVITY': 'Enterprise & SaaS',
+    'ENTERPRISE SOFTWARE': 'Enterprise & SaaS',
+    'MARKETING': 'Enterprise & SaaS',
+    'COLLABORATION': 'Enterprise & SaaS',
+
+    // Fintech
+    'PAYMENTS': 'Fintech',
+    'BANKING': 'Fintech',
+    'CRYPTO': 'Fintech',
+    'INSURANCE': 'Fintech',
+    'CONSUMER FINANCE': 'Fintech',
+    'FINANCE': 'Fintech',
+    'FINTECH': 'Fintech',
+    'CRYPTOCURRENCY': 'Fintech',
+    'WEB3': 'Fintech',
+
+    // Health & Biotech
+    'HEALTHCARE': 'Health & Biotech',
+    'BIOTECH': 'Health & Biotech',
+    'MEDTECH': 'Health & Biotech',
+    'WELLNESS': 'Health & Biotech',
+    'HEALTHTECH': 'Health & Biotech',
+    'BIOTECHNOLOGY': 'Health & Biotech',
+    'HEALTHCARE IT': 'Health & Biotech',
+
+    // Energy & Climate
+    'CLEAN ENERGY': 'Energy & Climate',
+    'SUSTAINABILITY': 'Energy & Climate',
+    'CLEANTECH': 'Energy & Climate',
+    'FUEL CELLS': 'Energy & Climate',
+    'RENEWABLES': 'Energy & Climate',
+    'ENERGY': 'Energy & Climate',
+
+    // Logistics & Mobility
+    'TRANSPORTATION': 'Logistics & Mobility',
+    'LOGISTICS': 'Logistics & Mobility',
+    'DRONES': 'Logistics & Mobility',
+    'AEROSPACE': 'Logistics & Mobility',
+    'AUTOMOTIVE': 'Logistics & Mobility',
+    'SUPPLY CHAIN': 'Logistics & Mobility',
+
+    // Space
+    'SPACE': 'Space',
+    'SATELLITE TECH': 'Space',
+    'SPACE EXPLORATION': 'Space',
+    'SPACE OPS': 'Space',
+
+    // Industrial & Hard Tech
+    'ROBOTICS': 'Industrial & Hard Tech',
+    'HARDWARE': 'Industrial & Hard Tech',
+    'IOT': 'Industrial & Hard Tech',
+    'MANUFACTURING': 'Industrial & Hard Tech',
+    'HARD TECH': 'Industrial & Hard Tech',
+    'ADVANCED MANUFACTURING': 'Industrial & Hard Tech',
+
+    // Consumer
+    'E-COMMERCE': 'Consumer',
+    'ENTERTAINMENT': 'Consumer',
+    'SOCIAL': 'Consumer',
+    'FOOD TECH': 'Consumer',
+    'CONSUMER': 'Consumer',
+    'RETAIL': 'Consumer',
+    'EDUCATION': 'Consumer',
+    'EDTECH': 'Consumer'
+};
+
+const getCategory = (industry: string | null): string => {
+    if (!industry) return 'General';
+    // Check primary vertical (first in comma separated list)
+    const primary = industry.split(',')[0].trim().toUpperCase();
+    return INDUSTRY_MAP[primary] || 'General';
+};
+
 const COLORS = ['#7c3aed', '#0891b2', '#2563eb', '#f59e0b', '#10b981', '#ef4444', '#ec4899'];
 
 export default function Analytics() {
     const [data, setData] = useState<AnalyticsData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [viewMode, setViewMode] = useState<'category' | 'industry'>('category');
+    const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [activeIndex, setActiveIndex] = useState<number | null>(null);
-    const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
+    const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
     const [industryCompanies, setIndustryCompanies] = useState<Company[]>([]);
-    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -47,25 +139,46 @@ export default function Analytics() {
         fetchData();
     }, []);
 
-    const fetchIndustryCompanies = async (industry: string) => {
+    const fetchCategoryCompanies = async (label: string, mode: 'category' | 'industry') => {
         try {
-            const params = new URLSearchParams({ size: '50', search: industry });
+            // For simplicity, we search by label
+            const params = new URLSearchParams({ size: '100', search: label });
             const res = await fetch(`http://localhost:8000/companies?${params.toString()}`);
             const result = await res.json();
-            // Client-side filter to be precise
-            const filtered = result.items.filter((c: Company) => c.industry === industry || (c.industry === null && industry === 'General'));
+
+            let filtered = [];
+            if (mode === 'industry') {
+                filtered = result.items.filter((c: Company) =>
+                    c.industry?.toUpperCase().includes(label.toUpperCase())
+                );
+            } else {
+                filtered = result.items.filter((c: Company) =>
+                    getCategory(c.industry) === label
+                );
+            }
             setIndustryCompanies(filtered);
         } catch (error) {
-            console.error("Fetch industry companies error:", error);
+            console.error("Fetch companies error:", error);
         }
     };
 
     const onPieClick = (_: any, index: number) => {
         if (!data) return;
-        const industry = data.industry_distribution[index].industry;
-        setActiveIndex(index);
-        setSelectedIndustry(industry);
-        fetchIndustryCompanies(industry);
+
+        if (viewMode === 'category') {
+            const category = categoryData[index].name;
+            setViewMode('industry');
+            setActiveCategory(category);
+            setActiveIndex(null); // Reset for sub-view
+            setSelectedLabel(category);
+            // Don't fetch companies yet, just show industry sub-breakdown
+            setIndustryCompanies([]);
+        } else {
+            const industry = industryData[index].name;
+            setActiveIndex(index);
+            setSelectedLabel(industry);
+            fetchCategoryCompanies(industry, 'industry');
+        }
     };
 
     if (loading) return (
@@ -75,10 +188,26 @@ export default function Analytics() {
         </div>
     );
 
-    const chartData = data?.industry_distribution.map(item => ({
-        name: item.industry || 'General',
-        value: item.count
-    })) || [];
+    // Group industries into categories
+    const categoryCounts: Record<string, number> = {};
+    data?.industry_distribution.forEach(item => {
+        const cat = getCategory(item.industry);
+        categoryCounts[cat] = (categoryCounts[cat] || 0) + item.count;
+    });
+
+    const categoryData = Object.entries(categoryCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, value]) => ({ name, value }));
+
+    // Industries within the active category
+    const industryData = data?.industry_distribution
+        .filter(item => getCategory(item.industry) === activeCategory)
+        .map(item => ({
+            name: item.industry || 'General',
+            value: item.count
+        })) || [];
+
+    const chartData = viewMode === 'category' ? categoryData : industryData;
 
     return (
         <main className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 selection:bg-indigo-100">
@@ -90,9 +219,19 @@ export default function Analytics() {
                         <span className="p-2 rounded-xl bg-slate-100 group-hover:bg-indigo-50 transition-colors"><ArrowLeft className="w-4 h-4" /></span>
                         Exit to Intelligence Pool
                     </Link>
-                    <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl glass border-slate-200 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
-                        <Activity className="w-3 h-3" />
-                        <span>Real-time Ecosystem Forensics</span>
+                    <div className="flex gap-4">
+                        {viewMode === 'industry' && (
+                            <button
+                                onClick={() => { setViewMode('category'); setActiveCategory(null); setSelectedLabel(null); setIndustryCompanies([]); }}
+                                className="px-4 py-2 rounded-xl glass border-slate-200 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-indigo-600 transition-all"
+                            >
+                                Back to Categories
+                            </button>
+                        )}
+                        <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl glass border-slate-200 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
+                            <Activity className="w-3 h-3" />
+                            <span>Real-time Ecosystem Forensics</span>
+                        </div>
                     </div>
                 </nav>
 
@@ -102,7 +241,7 @@ export default function Analytics() {
                         Ecosystem <span className="text-indigo-600">Forensics.</span>
                     </h1>
                     <p className="text-slate-500 font-bold uppercase tracking-[0.3em] text-[10px]">
-                        Vertical Intelligence Distribution across Spectral Cohorts (2024-2026).
+                        {viewMode === 'category' ? 'Strategic Cohort Distribution' : `Vertical Concentration in ${activeCategory}`}
                     </p>
                 </div>
 
@@ -113,23 +252,23 @@ export default function Analytics() {
                         <span className="text-6xl font-black text-slate-900">{data?.total_companies}</span>
                     </div>
                     <div className="glass p-10 rounded-[3rem] border-slate-200 bg-white/40">
-                        <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Market Verticals</span>
-                        <span className="text-6xl font-black text-indigo-600">{data?.industry_distribution.length}</span>
+                        <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Focus Verticals</span>
+                        <span className="text-6xl font-black text-indigo-600">{chartData.length}</span>
                     </div>
                     <div className="glass p-10 rounded-[3rem] border-slate-200 bg-white/40 overflow-hidden relative group">
-                        <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Primary Origin</span>
-                        <span className="text-6xl font-black text-slate-900">YC</span>
+                        <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Primary Path</span>
+                        <span className="text-6xl font-black text-slate-900">{viewMode === 'category' ? 'GLOBAL' : 'SEC-01'}</span>
                         <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full"></div>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                     {/* Interactive Pie Chart */}
-                    <div className="glass p-12 rounded-[3.5rem] border-slate-200 bg-white/60 min-h-[600px] flex flex-col justify-center relative">
+                    <div className="glass p-12 rounded-[3.5rem] border-slate-200 bg-white/60 min-h-[600px] flex flex-col justify-center relative transition-all duration-500">
                         <div className="absolute top-8 left-12">
                             <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-2 flex items-center gap-2">
                                 <Target className="w-4 h-4 text-indigo-500" />
-                                Vertical Concentration
+                                {viewMode === 'category' ? 'Market Overview' : `${activeCategory} Breakdown`}
                             </h2>
                             <p className="text-slate-900 font-black text-xl">Interactive Pie Distribution</p>
                         </div>
@@ -180,7 +319,7 @@ export default function Analytics() {
                         </div>
                         <div className="text-center mt-10">
                             <p className="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">
-                                Select a slice to drill down into company dossiers
+                                {viewMode === 'category' ? 'Click category to subdivide sectors' : 'Select industry to view company list'}
                             </p>
                         </div>
                     </div>
@@ -194,22 +333,25 @@ export default function Analytics() {
                                     Drill-Down Dossier
                                 </h2>
                                 <p className="text-slate-900 font-black text-2xl">
-                                    {selectedIndustry ? selectedIndustry : "Awaiting Selection..."}
+                                    {selectedLabel ? selectedLabel : "Awaiting Selection..."}
                                 </p>
                             </div>
                         </div>
 
                         <div className="flex-1 overflow-y-auto pr-4 space-y-4 custom-scrollbar">
-                            {!selectedIndustry ? (
+                            {!selectedLabel || (viewMode === 'industry' && !activeIndex) ? (
                                 <div className="h-full flex flex-col items-center justify-center text-center space-y-6 opacity-30 grayscale">
                                     <Search className="w-16 h-16 text-slate-300" />
                                     <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">
-                                        Select an industry slice from the distribution chart to synchronize unit data.
+                                        {viewMode === 'category'
+                                            ? "Select a market cohort from the distribution chart to subdivide results."
+                                            : "Select a specific vertical to synchronize unit data."}
                                     </p>
                                 </div>
                             ) : industryCompanies.length === 0 ? (
-                                <div className="h-full flex items-center justify-center">
-                                    <p className="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">Zero units located in this sector cohort.</p>
+                                <div className="h-full flex items-center justify-center flex-col gap-4">
+                                    <Activity className="w-12 h-12 text-indigo-100 animate-pulse" />
+                                    <p className="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">Synching unit dossiers...</p>
                                 </div>
                             ) : (
                                 industryCompanies.map((company) => (
