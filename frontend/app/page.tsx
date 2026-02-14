@@ -33,7 +33,7 @@ export default function Home() {
   const [totalPages, setTotalPages] = useState(1);
   const [sortBy, setSortBy] = useState('id');
   const [order, setOrder] = useState<'asc' | 'desc'>('desc');
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('table');
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [scrapeStatus, setScrapeStatus] = useState({ is_running: false, progress: 0, current_step: "", last_run: null });
 
   const fetchCompanies = async () => {
@@ -41,7 +41,7 @@ export default function Home() {
     try {
       const params = new URLSearchParams({
         page: page.toString(),
-        size: '20',
+        size: '12',
         sort_by: sortBy,
         order: order,
       });
@@ -99,72 +99,67 @@ export default function Home() {
   };
 
   const SortIcon = ({ column }: { column: string }) => {
-    if (sortBy !== column) return <span className="ml-1 opacity-20 group-hover:opacity-50">↕</span>;
-    return <span className="ml-1 text-indigo-600">{order === 'asc' ? '↑' : '↓'}</span>;
+    if (sortBy !== column) return <span className="ml-1 opacity-20">↕</span>;
+    return <span className="ml-1 text-cyan-400">{order === 'asc' ? '↑' : '↓'}</span>;
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 pb-20">
+    <main className="min-h-screen pb-20 selection:bg-cyan-500/30">
       {/* Header Section */}
-      <div className="bg-white border-b border-gray-200 py-10 mb-8 shadow-sm">
+      <div className="py-20 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-indigo-500/10 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-              <h1 className="text-4xl font-black text-gray-900 tracking-tight flex items-center">
-                🚀 Intelligence Pool <span className="ml-3 text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-full font-bold uppercase tracking-widest">Phase 4</span>
-              </h1>
-              <p className="text-gray-500 mt-2 text-lg">Logo Integration & Live Scraping Metrics.</p>
+          <div className="flex flex-col items-center text-center space-y-8">
+            <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full glass border-white/5 text-[10px] font-black uppercase tracking-[0.4em] text-cyan-400 animate-pulse">
+              <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)]"></span>
+              <span>Next-Gen Intelligence Sync</span>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="flex bg-gray-100 p-1.5 rounded-2xl">
-                <button
-                  onClick={() => setViewMode('table')}
-                  className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${viewMode === 'table' ? 'bg-white shadow-md text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
-                >
-                  Table
-                </button>
-                <button
-                  onClick={() => setViewMode('cards')}
-                  className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${viewMode === 'cards' ? 'bg-white shadow-md text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
-                >
-                  Grid
-                </button>
-              </div>
-              <div className="flex gap-4">
-                <Link
-                  href="/analytics"
-                  className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all shadow-lg flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                  Analytics
-                </Link>
-                <button
-                  onClick={handleRefresh}
-                  disabled={scrapeStatus.is_running}
-                  className={`px-6 py-2 ${scrapeStatus.is_running ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-lg transition-all shadow-lg flex items-center gap-2`}
-                >
-                  <svg className={`w-4 h-4 ${scrapeStatus.is_running ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                  {scrapeStatus.is_running ? 'Refreshing...' : 'Refresh Intelligence'}
-                </button>
-              </div>
+            <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-white">
+              Intelligence <span className="text-gradient">Pool.</span>
+            </h1>
+
+            <p className="max-w-2xl text-xl text-gray-400 font-medium leading-relaxed">
+              Synthesizing real-time data flow from the world's most aggressive capital silos.
+              Premium VC forensics for the next generation.
+            </p>
+
+            <div className="flex flex-wrap justify-center gap-6 pt-8">
+              <Link
+                href="/analytics"
+                className="px-8 py-4 glass glass-hover rounded-2xl text-white font-black text-xs uppercase tracking-[0.2em] flex items-center gap-3"
+              >
+                <span className="p-2 rounded-lg bg-purple-500/20 text-purple-400">📊</span>
+                Ecosystem Metrics
+              </Link>
+              <button
+                onClick={handleRefresh}
+                disabled={scrapeStatus.is_running}
+                className={`px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center gap-3 transition-all ${scrapeStatus.is_running
+                    ? 'bg-white/5 text-gray-500 border border-white/5 cursor-not-allowed'
+                    : 'bg-white text-black hover:bg-cyan-400 hover:shadow-[0_0_30px_rgba(34,211,238,0.3)]'
+                  }`}
+              >
+                <span className={`p-2 rounded-lg ${scrapeStatus.is_running ? 'bg-gray-800' : 'bg-black/5'} ${scrapeStatus.is_running ? 'animate-spin' : ''}`}>⚡</span>
+                {scrapeStatus.is_running ? 'Syncing...' : 'Force Intelligence Sync'}
+              </button>
             </div>
           </div>
 
-          {/* Scrape Progress Bar */}
+          {/* Scrape Progress */}
           {scrapeStatus.is_running && (
-            <div className="mt-8">
-              <div className="bg-white border-2 border-indigo-100 p-6 rounded-3xl shadow-xl">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-gray-900 font-black flex items-center gap-2 uppercase tracking-widest text-xs">
-                    <span className="w-2.5 h-2.5 bg-indigo-600 rounded-full animate-ping"></span>
-                    Current Activity: {scrapeStatus.current_step}
-                  </span>
-                  <span className="text-indigo-600 font-black">{scrapeStatus.progress}%</span>
+            <div className="mt-16 max-w-3xl mx-auto">
+              <div className="glass p-8 rounded-[2rem] border-cyan-500/20 shadow-[0_0_50px_rgba(6,182,212,0.1)]">
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-black text-cyan-400 uppercase tracking-[0.3em]">Neural Status</span>
+                    <span className="text-white font-bold">{scrapeStatus.current_step}</span>
+                  </div>
+                  <span className="text-3xl font-black text-white">{scrapeStatus.progress}%</span>
                 </div>
-                <div className="w-full bg-gray-100 rounded-full h-4 overflow-hidden border border-gray-200">
+                <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden border border-white/5">
                   <div
-                    className="bg-indigo-600 h-full transition-all duration-700 ease-out"
+                    className="bg-gradient-to-r from-cyan-500 to-indigo-600 h-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(34,211,238,0.5)]"
                     style={{ width: `${scrapeStatus.progress}%` }}
                   ></div>
                 </div>
@@ -173,27 +168,46 @@ export default function Home() {
           )}
 
           {/* Controls */}
-          <div className="mt-10 flex flex-col md:flex-row gap-5">
+          <div className="mt-20 flex flex-col md:flex-row gap-6 p-2 bg-white/5 rounded-[3rem] border border-white/5 backdrop-blur-xl">
             <div className="relative flex-1">
-              <span className="absolute left-5 top-1/2 -translate-y-1/2 text-xl">🔍</span>
+              <span className="absolute left-6 top-1/2 -translate-y-1/2 text-xl opacity-50">🔍</span>
               <input
                 type="text"
-                placeholder="Search names, problems, founders, or industries..."
+                placeholder="Query companies, problems, founders, or verticals..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-14 pr-6 py-4.5 border-2 border-gray-100 rounded-3xl focus:border-indigo-400 outline-none transition-all hover:bg-gray-50 text-gray-800 shadow-sm"
+                className="w-full pl-16 pr-8 py-6 bg-transparent border-none focus:ring-0 outline-none text-white font-medium placeholder:text-gray-600 text-lg"
               />
             </div>
-            <select
-              value={source}
-              onChange={(e) => setSource(e.target.value)}
-              className="px-8 py-4.5 border-2 border-gray-100 rounded-3xl outline-none appearance-none bg-white font-bold text-gray-700 cursor-pointer hover:bg-gray-50 transition-all shadow-sm"
-            >
-              <option value="All">All VCs</option>
-              <option value="YC">Y Combinator</option>
-              <option value="StartX">StartX</option>
-              <option value="AV">Alumni Ventures</option>
-            </select>
+            <div className="flex gap-4 p-2">
+              <select
+                value={source}
+                onChange={(e) => setSource(e.target.value)}
+                className="px-8 py-4 bg-white/5 rounded-2xl outline-none border border-white/10 font-black text-[10px] uppercase tracking-widest text-white cursor-pointer hover:bg-white/10 transition-all appearance-none"
+              >
+                <option value="All">All Sources</option>
+                <option value="YC">Y Combinator</option>
+                <option value="StartX">StartX</option>
+                <option value="AV">Alumni Ventures</option>
+              </select>
+
+              <div className="h-full w-[1px] bg-white/10 mx-2"></div>
+
+              <div className="flex p-1 bg-black/40 rounded-xl border border-white/5">
+                <button
+                  onClick={() => setViewMode('table')}
+                  className={`px-4 py-2 rounded-lg text-[10px] font-black tracking-widest uppercase transition-all ${viewMode === 'table' ? 'bg-white text-black' : 'text-gray-500 hover:text-white'}`}
+                >
+                  List
+                </button>
+                <button
+                  onClick={() => setViewMode('cards')}
+                  className={`px-4 py-2 rounded-lg text-[10px] font-black tracking-widest uppercase transition-all ${viewMode === 'cards' ? 'bg-white text-black' : 'text-gray-500 hover:text-white'}`}
+                >
+                  Grid
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -201,23 +215,23 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-40">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-600 border-t-transparent mb-6"></div>
-            <p className="text-gray-500 font-bold text-xl">Aggregating Global Intelligence...</p>
+            <div className="w-16 h-16 border-t-2 border-r-2 border-cyan-400 rounded-full animate-spin mb-8 shadow-[0_0_20px_rgba(34,211,238,0.2)]"></div>
+            <p className="text-gray-500 font-black uppercase tracking-[0.4em] text-xs">Deciphering Intelligence Stream...</p>
           </div>
         ) : (
           <>
             {companies.length === 0 ? (
-              <div className="text-center py-32 bg-white rounded-3xl border-2 border-dashed border-gray-200">
-                <div className="text-6xl mb-6">🏜️</div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">No Intelligence Found</h3>
-                <p className="text-gray-500">Try refining your filters or trigger a new scrape.</p>
+              <div className="text-center py-32 glass rounded-[3rem] border-dashed">
+                <div className="text-6xl mb-8 opacity-20">📡</div>
+                <h3 className="text-2xl font-black text-white mb-2">Zero Signals Found</h3>
+                <p className="text-gray-500 font-medium">No results match your current spectral parameters.</p>
               </div>
             ) : (
               <>
                 {viewMode === 'cards' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                     {companies.map((company) => (
-                      <Link key={company.id} href={`/companies/${company.id}`} className="block h-full transition-transform hover:-translate-y-2">
+                      <Link key={company.id} href={`/companies/${company.id}`} className="block h-full cursor-none-custom">
                         <CompanyCard company={company} />
                       </Link>
                     ))}
@@ -225,65 +239,64 @@ export default function Home() {
                 )}
 
                 {viewMode === 'table' && (
-                  <div className="bg-white rounded-3xl shadow-2xl overflow-x-auto border border-gray-100">
+                  <div className="glass rounded-[2.5rem] overflow-x-auto border border-white/5">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="bg-gray-50/50 border-b border-gray-100">
-                          <th className="px-8 py-6 text-xs font-black text-gray-400 uppercase tracking-widest cursor-pointer group">
-                            Logo
-                          </th>
-                          <th className="px-8 py-6 text-xs font-black text-gray-400 uppercase tracking-widest cursor-pointer group" onClick={() => handleSort('name')}>
+                        <tr className="border-b border-white/5">
+                          <th className="px-10 py-8 text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">Platform</th>
+                          <th className="px-10 py-8 text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] cursor-pointer group" onClick={() => handleSort('name')}>
                             Startup <SortIcon column="name" />
                           </th>
-                          <th className="px-8 py-6 text-xs font-black text-gray-400 uppercase tracking-widest cursor-pointer group" onClick={() => handleSort('batch')}>
+                          <th className="px-10 py-8 text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] cursor-pointer group" onClick={() => handleSort('batch')}>
                             Batch <SortIcon column="batch" />
                           </th>
-                          <th className="px-8 py-6 text-xs font-black text-gray-400 uppercase tracking-widest cursor-pointer group" onClick={() => handleSort('industry')}>
-                            Industry <SortIcon column="industry" />
-                          </th>
-                          <th className="px-8 py-6 text-xs font-black text-gray-400 uppercase tracking-widest cursor-pointer group" onClick={() => handleSort('funding_raised')}>
-                            Funding <SortIcon column="funding_raised" />
-                          </th>
-                          <th className="px-8 py-6 text-xs font-black text-gray-400 uppercase tracking-widest cursor-pointer group" onClick={() => handleSort('source')}>
-                            Source <SortIcon column="source" />
-                          </th>
+                          <th className="px-10 py-8 text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">Industry</th>
+                          <th className="px-10 py-8 text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">Digital Hub</th>
+                          <th className="px-10 py-8 text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">Source</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-50">
+                      <tbody className="divide-y divide-white/5">
                         {companies.map((company) => (
                           <tr
                             key={company.id}
-                            className="hover:bg-indigo-50/30 transition-colors group cursor-pointer"
+                            className="hover:bg-white/[0.02] transition-colors group cursor-pointer"
                             onClick={() => window.location.href = `/companies/${company.id}`}
                           >
-                            <td className="px-8 py-6">
+                            <td className="px-10 py-8">
                               {company.logo_url ? (
-                                <img src={company.logo_url} alt={company.name} className="w-12 h-12 rounded-xl object-contain bg-white border border-gray-100 shadow-sm" />
+                                <img src={company.logo_url} alt={company.name} className="w-10 h-10 rounded-lg object-contain bg-white/5 border border-white/10" />
                               ) : (
-                                <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 font-black text-xl border-2 border-dashed border-gray-200">
+                                <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-white/20 font-black text-lg border border-white/10 border-dashed">
                                   {company.name[0]}
                                 </div>
                               )}
                             </td>
-                            <td className="px-8 py-6">
-                              <div className="font-black text-gray-900 group-hover:text-indigo-600 transition-colors text-lg">{company.name}</div>
-                              <div className="text-xs text-gray-400 font-bold mt-1 tracking-wider uppercase h-4 overflow-hidden line-clamp-1">{company.one_liner}</div>
+                            <td className="px-10 py-8">
+                              <div className="font-black text-white group-hover:text-cyan-400 transition-colors text-lg tracking-tight">{company.name}</div>
+                              <div className="text-[10px] text-gray-600 font-bold mt-1 uppercase tracking-widest truncate max-w-xs">{company.one_liner}</div>
                             </td>
-                            <td className="px-8 py-6">
-                              <span className="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-[10px] font-black uppercase tracking-tighter">
+                            <td className="px-10 py-8">
+                              <span className="px-3 py-1.5 rounded-lg bg-white/5 text-gray-400 text-[10px] font-black uppercase tracking-widest border border-white/5">
                                 {company.batch}
                               </span>
                             </td>
-                            <td className="px-8 py-6">
-                              <div className="text-sm text-gray-600 font-medium">{company.industry || "General"}</div>
+                            <td className="px-10 py-8">
+                              <div className="text-sm text-gray-500 font-bold uppercase tracking-tighter">{company.industry || "General"}</div>
                             </td>
-                            <td className="px-8 py-6">
-                              <div className="px-3 py-1 bg-green-50 text-green-700 rounded-lg inline-block font-black text-xs">
-                                {company.funding_raised || "Undisclosed"}
-                              </div>
+                            <td className="px-10 py-8">
+                              {company.website && (
+                                <a
+                                  href={company.website}
+                                  target="_blank"
+                                  className="text-[10px] font-black text-cyan-500 hover:text-cyan-400 transition-colors underline decoration-cyan-500/30 underline-offset-4"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  Visit Domain
+                                </a>
+                              )}
                             </td>
-                            <td className="px-8 py-6">
-                              <div className="text-xs font-black text-indigo-400 uppercase tracking-widest">{company.source}</div>
+                            <td className="px-10 py-8">
+                              <div className="text-[10px] font-black text-purple-400/60 uppercase tracking-[0.2em]">{company.source}</div>
                             </td>
                           </tr>
                         ))}
@@ -294,21 +307,21 @@ export default function Home() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="mt-16 flex justify-center items-center gap-6">
+                  <div className="mt-20 flex justify-center items-center gap-8">
                     <button
                       onClick={() => setPage(Math.max(1, page - 1))}
                       disabled={page === 1}
-                      className="w-12 h-12 flex items-center justify-center border-2 border-gray-200 rounded-2xl disabled:opacity-30 hover:bg-white hover:border-indigo-400 transition-all text-xl"
+                      className="w-14 h-14 flex items-center justify-center glass rounded-2xl disabled:opacity-20 hover:border-cyan-500/50 transition-all text-xl"
                     >
                       ←
                     </button>
-                    <div className="text-gray-500 font-black tracking-widest uppercase text-xs">
-                      Page <span className="text-indigo-600 text-lg mx-2">{page}</span> of {totalPages}
+                    <div className="text-gray-500 font-black tracking-[0.4em] uppercase text-[10px]">
+                      Sector <span className="text-white text-lg mx-2">{page}</span> / {totalPages}
                     </div>
                     <button
                       onClick={() => setPage(Math.min(totalPages, page + 1))}
                       disabled={page === totalPages}
-                      className="w-12 h-12 flex items-center justify-center border-2 border-gray-200 rounded-2xl disabled:opacity-30 hover:bg-white hover:border-indigo-400 transition-all text-xl"
+                      className="w-14 h-14 flex items-center justify-center glass rounded-2xl disabled:opacity-20 hover:border-cyan-500/50 transition-all text-xl"
                     >
                       →
                     </button>
