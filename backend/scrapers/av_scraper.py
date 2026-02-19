@@ -1,91 +1,74 @@
-import asyncio
+import requests
 from typing import List
-from playwright.async_api import async_playwright
+from bs4 import BeautifulSoup
 from sqlalchemy.orm import Session
 from scrapers.base import BaseScraper
 from models import Company
 
 class AVScraper(BaseScraper):
     async def fetch_data(self) -> List[dict]:
+        """Fetch Alumni Ventures portfolio data using requests + BeautifulSoup (no browser needed)."""
         companies = []
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
-            page = await browser.new_page()
+        print("Scraping Alumni Ventures Portfolio with requests...")
+        
+        try:
+            resp = requests.get(
+                "https://www.av.vc/portfolio",
+                timeout=30,
+                headers={
+                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                }
+            )
+            resp.raise_for_status()
+            soup = BeautifulSoup(resp.text, "html.parser")
             
-            print("Scraping Alumni Ventures Portfolio...")
-            await page.goto("https://www.av.vc/portfolio", wait_until="networkidle")
+            # Find company items in the portfolio listing
+            # Try multiple selector strategies
+            items = soup.select('[class*="portfolio_list"] li a, [class*="portfolio"] li a, .w-dyn-item a')
             
-            # Scroll to load the list
-            for _ in range(5):
-                await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-                await page.wait_for_timeout(1000)
-
-            # Find all company links in the grid
-            # Selector: .portfolio_list__Tjcpw li a
-            links = await page.locator('.portfolio_list__Tjcpw li a, [class*="portfolio_list"] li a').all()
-            print(f"Found {len(links)} interactive company items")
+            if not items:
+                # Fallback: find all links that could be company links
+                items = soup.select('a[href^="http"]')
             
-            # Since we need to click each one, let's limit to 30 for performance/demo
-            for link in links[:30]:
+            seen_names = set()
+            print(f"Found {len(items)} raw portfolio items")
+            
+            for item in items:
                 try:
-                    name = await link.inner_text()
-                    if not name: continue
+                    name = item.get_text(strip=True)
+                    if not name or len(name) > 100:
+                        continue
                     
-                    # Click to open modal
-                    await link.click()
-                    await page.wait_for_timeout(1500) # Wait for modal
+                    href = item.get("href", "")
                     
-                    # Extract from modal
-                    # Selectors based on research
-                    modal = page.locator('[class*="modal_body"], .modal-content').first
-                    if await modal.count() > 0:
-                        desc_el = modal.locator('[class*="portfolio_description"], p').first
-                        one_liner = await desc_el.inner_text() if await desc_el.count() > 0 else ""
-                        
-                        web_el = modal.locator('[class*="portfolio_companylink"] a, a[href^="http"]').first
-                        website = await web_el.get_attribute("href") if await web_el.count() > 0 else None
-                        
-                        logo_el = modal.locator('img[class*="portfolio_logo"], .portfolio_logo img, img').first
-                        logo_url = await logo_el.get_attribute("src") if await logo_el.count() > 0 else None
-                        
-                        # Extra fields in modal
-                        # ul.portfolio_companyprops__fmCm3 li
-                        industry = ""
-                        props = await modal.locator('ul[class*="portfolio_companyprops"] li').all()
-                        for prop in props:
-                            p_text = await prop.inner_text()
-                            if ":" in p_text:
-                                key, val = p_text.split(":", 1)
-                                if "Sector" in key or "Industry" in key:
-                                    industry = val.strip()
-
-                        companies.append({
-                            "name": name,
-                            "logo_url": logo_url,
-                            "one_liner": one_liner,
-                            "website": website,
-                            "industry": industry,
-                            "source": "AV",
-                            "batch": "AV Portfolio",
-                            "funding_raised": "AV Funded"
-                        })
-                        
-                        # Close modal
-                        close_btn = page.locator('[class*="modal_close"], button.close').first
-                        if await close_btn.count() > 0:
-                            await close_btn.click()
-                        else:
-                            # Try Esc key
-                            await page.keyboard.press("Escape")
-                        await page.wait_for_timeout(500)
-                except Exception as e:
-                    print(f"Error scraping AV item: {e}")
-                    # Try to reset by pressing escape
-                    await page.keyboard.press("Escape")
+                    # Skip internal links and social media
+                    if any(x in href for x in ["av.vc", "linkedin.com", "twitter.com", "facebook.com", "#"]):
+                        continue
+                    
+                    if name in seen_names:
+                        continue
+                    seen_names.add(name)
+                    
+                    # Try to find logo
+                    img = item.find("img")
+                    logo_url = img.get("src", "") if img else None
+                    
+                    companies.append({
+                        "name": name,
+                        "logo_url": logo_url,
+                        "website": href if href.startswith("http") else None,
+                        "source": "AV",
+                        "batch": "AV Portfolio",
+                        "funding_raised": "AV Funded"
+                    })
+                except Exception:
                     continue
-                    
-            await browser.close()
-        return companies
+            
+            print(f"Extracted {len(companies)} Alumni Ventures companies")
+        except Exception as e:
+            print(f"Error scraping AV: {e}")
+        
+        return companies[:30]  # Limit for MVP
 
     async def process_data(self, data: List[dict]):
         print(f"Processing {len(data)} Alumni Ventures companies...")

@@ -1,59 +1,60 @@
-import asyncio
+import requests
 from typing import List
-from playwright.async_api import async_playwright
+from bs4 import BeautifulSoup
 from sqlalchemy.orm import Session
 from scrapers.base import BaseScraper
 from models import Company
 
 class StartXScraper(BaseScraper):
     async def fetch_data(self) -> List[dict]:
+        """Fetch StartX company data using requests + BeautifulSoup (no browser needed)."""
         companies = []
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
-            page = await browser.new_page()
+        print("Scraping StartX with requests...")
+        
+        try:
+            resp = requests.get(
+                "https://startx.com/companies",
+                timeout=30,
+                headers={
+                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                }
+            )
+            resp.raise_for_status()
+            soup = BeautifulSoup(resp.text, "html.parser")
             
-            # StartX companies page
-            print("Scraping StartX...")
-            await page.goto("https://startx.com/companies", wait_until="networkidle")
+            # Find company links - adapt selectors to the page structure
+            links = soup.select('a[href^="http"]')
+            seen_names = set()
             
-            # The page has a grid of logos. Let's try to find them.
-            # Based on research, it's often a series of containers with images and links.
-            # Search for a[href] inside specific divs or just all links that are likely companies.
-            
-            # Scroll to load everything
-            for _ in range(5):
-                await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-                await page.wait_for_timeout(1000)
-
-            # Selector based on common logo grid structures
-            cards = await page.locator('div.logo-container, div.company-logo, div.community-card').all()
-            if not cards:
-                # Fallback: just find all image links in a main container
-                cards = await page.locator('a[href*="http"]').all()
-            
-            print(f"Found {len(cards)} potential StartX items")
-            
-            for card in cards[:30]: # Limit for MVP
+            for link in links:
                 try:
-                    href = await card.get_attribute("href")
-                    if not href or "startx.com" in href: continue
+                    href = link.get("href", "")
+                    if not href or "startx.com" in href:
+                        continue
                     
-                    # Try to get Name from alt text of img inside or title
+                    # Try to get name from img alt text or link text
                     name = None
-                    img = card.locator('img').first
-                    logo_url = await img.get_attribute("src") if await img.count() > 0 else None
-                    if logo_url and logo_url.startswith('/'):
-                        logo_url = f"https://startx.com{logo_url}"
-                    if await img.count() > 0:
-                        name = await img.get_attribute("alt")
+                    img = link.find("img")
+                    logo_url = None
+                    if img:
+                        name = img.get("alt", "")
+                        logo_url = img.get("src", "")
+                        if logo_url and logo_url.startswith("/"):
+                            logo_url = f"https://startx.com{logo_url}"
                     
                     if not name:
-                         # try parsing text from sibling or the link itself
-                         domain_parts = href.split('//')[-1].split('.')
-                         # Filter out common subdomains like 'www'
-                         interesting_parts = [p for p in domain_parts if p.lower() not in ['www', 'com', 'org', 'net', 'io']]
-                         name = interesting_parts[0].capitalize() if interesting_parts else "Unknown"
-
+                        name = link.get_text(strip=True)
+                    
+                    if not name:
+                        # Parse from domain
+                        domain_parts = href.split("//")[-1].split(".")
+                        interesting = [p for p in domain_parts if p.lower() not in ["www", "com", "org", "net", "io"]]
+                        name = interesting[0].capitalize() if interesting else "Unknown"
+                    
+                    if name in seen_names or name == "Unknown":
+                        continue
+                    seen_names.add(name)
+                    
                     companies.append({
                         "name": name,
                         "logo_url": logo_url,
@@ -62,11 +63,14 @@ class StartXScraper(BaseScraper):
                         "batch": "StartX Alum",
                         "funding_raised": "StartX Portfolio"
                     })
-                except:
+                except Exception:
                     continue
-                    
-            await browser.close()
-        return companies
+            
+            print(f"Found {len(companies)} StartX companies")
+        except Exception as e:
+            print(f"Error scraping StartX: {e}")
+        
+        return companies[:30]  # Limit for MVP
 
     async def process_data(self, data: List[dict]):
         print(f"Processing {len(data)} StartX companies...")
