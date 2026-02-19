@@ -4,12 +4,13 @@ from bs4 import BeautifulSoup
 from sqlalchemy.orm import Session
 from scrapers.base import BaseScraper
 from models import Company
+from logs import add_scrape_log
 
 class AVScraper(BaseScraper):
     async def fetch_data(self) -> List[dict]:
         """Fetch Alumni Ventures portfolio data using requests + BeautifulSoup (no browser needed)."""
         companies = []
-        print("Scraping Alumni Ventures Portfolio with requests...")
+        add_scrape_log("Scraping Alumni Ventures Portfolio with requests...")
         
         try:
             resp = requests.get(
@@ -31,7 +32,7 @@ class AVScraper(BaseScraper):
                 items = soup.select('a[href^="http"]')
             
             seen_names = set()
-            print(f"Found {len(items)} raw portfolio items")
+            add_scrape_log(f"Found {len(items)} raw portfolio items")
             
             for item in items:
                 try:
@@ -64,14 +65,14 @@ class AVScraper(BaseScraper):
                 except Exception:
                     continue
             
-            print(f"Extracted {len(companies)} Alumni Ventures companies")
+            add_scrape_log(f"Extracted {len(companies)} Alumni Ventures companies")
         except Exception as e:
-            print(f"Error scraping AV: {e}")
+            add_scrape_log(f"Error scraping AV: {e}")
         
         return companies[:30]  # Limit for MVP
 
     async def process_data(self, data: List[dict]):
-        print(f"Processing {len(data)} Alumni Ventures companies...")
+        add_scrape_log(f"Processing {len(data)} Alumni Ventures companies...")
         for item in data:
             existing = self.db.query(Company).filter(Company.name == item["name"], Company.source == "AV").first()
             if not existing:
@@ -81,4 +82,4 @@ class AVScraper(BaseScraper):
                 for key, value in item.items():
                     if value: setattr(existing, key, value)
         self.db.commit()
-        print("AV data committed successfully.")
+        add_scrape_log("AV data committed successfully.")

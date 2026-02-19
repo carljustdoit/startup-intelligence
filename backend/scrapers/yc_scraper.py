@@ -3,6 +3,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from scrapers.base import BaseScraper
 from models import Company, Founder
+from logs import add_scrape_log
 
 class YCScraper(BaseScraper):
     def __init__(self, db: Session, batches: List[str] = ["S2026", "X2026", "W2026", "F2025", "S2025", "X2025", "W2025"]):
@@ -12,7 +13,7 @@ class YCScraper(BaseScraper):
     async def fetch_data(self) -> List[dict]:
         """Fetch YC company data from the free yc-oss JSON API (no browser needed)."""
         all_companies = []
-        print("Fetching YC data from yc-oss API...")
+        add_scrape_log(f"Fetching YC data from yc-oss API...")
         
         try:
             resp = requests.get(
@@ -22,9 +23,9 @@ class YCScraper(BaseScraper):
             )
             resp.raise_for_status()
             data = resp.json()
-            print(f"Fetched {len(data)} total YC companies from API")
+            add_scrape_log(f"Fetched {len(data)} total YC companies from API")
         except Exception as e:
-            print(f"Error fetching YC API: {e}")
+            add_scrape_log(f"Error fetching YC API: {e}")
             return []
         
         # Filter by target batches
@@ -50,11 +51,11 @@ class YCScraper(BaseScraper):
                     "founders_list": []  # API doesn't include founder details
                 })
         
-        print(f"Filtered to {len(all_companies)} companies in target batches: {self.batches}")
+        add_scrape_log(f"Filtered to {len(all_companies)} companies in target batches: {self.batches}")
         return all_companies
 
     async def process_data(self, data: List[dict]):
-        print(f"Integrating {len(data)} YC records...")
+        add_scrape_log(f"Integrating {len(data)} YC records...")
         for item in data:
             if not item.get("name"): continue
             founders_data = item.pop("founders_list", [])
@@ -80,4 +81,4 @@ class YCScraper(BaseScraper):
                         setattr(existing_f, key, value)
         
         self.db.commit()
-        print("YC records saved.")
+        add_scrape_log("YC records saved.")

@@ -4,12 +4,13 @@ from bs4 import BeautifulSoup
 from sqlalchemy.orm import Session
 from scrapers.base import BaseScraper
 from models import Company
+from logs import add_scrape_log
 
 class StartXScraper(BaseScraper):
     async def fetch_data(self) -> List[dict]:
         """Fetch StartX company data using requests + BeautifulSoup (no browser needed)."""
         companies = []
-        print("Scraping StartX with requests...")
+        add_scrape_log("Scraping StartX with requests...")
         
         try:
             resp = requests.get(
@@ -66,18 +67,18 @@ class StartXScraper(BaseScraper):
                 except Exception:
                     continue
             
-            print(f"Found {len(companies)} StartX companies")
+            add_scrape_log(f"Found {len(companies)} StartX companies")
         except Exception as e:
-            print(f"Error scraping StartX: {e}")
+            add_scrape_log(f"Error scraping StartX: {e}")
         
         return companies[:30]  # Limit for MVP
 
     async def process_data(self, data: List[dict]):
-        print(f"Processing {len(data)} StartX companies...")
+        add_scrape_log(f"Processing {len(data)} StartX companies...")
         for item in data:
             existing = self.db.query(Company).filter(Company.name == item["name"], Company.source == "StartX").first()
             if not existing:
                 company = Company(**item)
                 self.db.add(company)
         self.db.commit()
-        print("StartX data committed.")
+        add_scrape_log("StartX data committed.")

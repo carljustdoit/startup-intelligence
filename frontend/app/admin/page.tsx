@@ -1,42 +1,59 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Shield, Zap, ArrowLeft, CheckCircle, XCircle, Loader2, Terminal } from 'lucide-react';
-import { useRef } from 'react';
-import { useEffect as useReactEffect } from 'react';
+import { Shield, Zap, ArrowLeft, CheckCircle, XCircle, Loader2, Terminal, AlertCircle, RefreshCw } from 'lucide-react';
 
 export default function AdminPage() {
     const [adminKey, setAdminKey] = useState('');
     const [authenticated, setAuthenticated] = useState(false);
-    const [scrapeStatus, setScrapeStatus] = useState({ is_running: false, progress: 0, current_step: "", last_run: null as string | null });
+    const [scrapeStatus, setScrapeStatus] = useState({ is_running: false, progress: 0, current_step: "Idle", last_run: null as string | null });
     const [logs, setLogs] = useState<string[]>([]);
     const [message, setMessage] = useState<string | null>(null);
     const logContainerRef = useRef<HTMLDivElement>(null);
     const [error, setError] = useState<string | null>(null);
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const [isConnected, setIsConnected] = useState<boolean | null>(null);
+
+    // Dynamic API URL detection
+    const [apiUrl, setApiUrl] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const hostname = window.location.hostname;
+            // If on Render frontend, target the Render backend
+            if (hostname.endsWith('.onrender.com') && !hostname.includes('-backend')) {
+                return `https://${hostname.replace('.onrender.com', '-backend.onrender.com')}`;
+            }
+            if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+        }
+        return 'http://localhost:8000';
+    });
 
     const fetchScrapeLogs = async () => {
         try {
             const res = await fetch(`${apiUrl}/scrape/logs`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             setLogs(data.logs || []);
-        } catch {
-            // silent fail
+            setIsConnected(true);
+        } catch (err) {
+            console.error("Logs error:", err);
+            setIsConnected(false);
         }
     };
 
     const fetchScrapeStatus = async () => {
         try {
             const res = await fetch(`${apiUrl}/scrape/status`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             setScrapeStatus(data);
+            setIsConnected(true);
             if (data.is_running) {
                 fetchScrapeLogs();
                 setTimeout(fetchScrapeStatus, 2000);
             }
-        } catch {
-            // silently fail
+        } catch (err) {
+            console.error("Status error:", err);
+            setIsConnected(false);
         }
     };
 
@@ -153,11 +170,34 @@ export default function AdminPage() {
                             <p className="text-slate-500 text-xs font-mono mt-0.5">Scrape & Data Management</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]"></span>
-                        <span className="text-emerald-400 text-[10px] font-bold uppercase tracking-widest">Authenticated</span>
+                    <div className="flex gap-2">
+                        {isConnected === false && (
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20">
+                                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                                <span className="text-red-500 text-[10px] font-bold uppercase tracking-widest">Disconnected</span>
+                            </div>
+                        )}
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]"></span>
+                            <span className="text-emerald-400 text-[10px] font-bold uppercase tracking-widest">Authenticated</span>
+                        </div>
                     </div>
                 </div>
+
+                {isConnected === false && (
+                    <div className="mb-6 p-6 rounded-3xl bg-amber-500/10 border border-amber-500/20 text-amber-200">
+                        <div className="flex items-start gap-3">
+                            <AlertCircle className="w-5 h-5 text-amber-500 mt-1 flex-shrink-0" />
+                            <div>
+                                <h3 className="font-bold text-sm">Backend Connection Error</h3>
+                                <p className="text-xs text-amber-200/60 mt-1 leading-relaxed">
+                                    The frontend is trying to reach the API at <strong>{apiUrl}</strong> but it's not responding.
+                                    If this is a production deployment, make sure your <strong>NEXT_PUBLIC_API_URL</strong> is set to your backend URL in the Render dashboard.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Scrape Control */}
                 <div className="bg-white/5 border border-white/10 rounded-3xl p-8 mb-6">
@@ -257,13 +297,37 @@ export default function AdminPage() {
                     </div>
                 )}
 
-                {/* API Info */}
-                <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
-                    <h2 className="text-white font-bold text-lg mb-4">Connection</h2>
+                {/* API Info & Override */}
+                <div className="bg-white/5 border border-white/10 rounded-3xl p-8 mb-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-white font-bold text-lg">Connection</h2>
+                        <button
+                            onClick={() => {
+                                const newUrl = prompt('Enter Backend API URL (e.g. https://your-backend.onrender.com):', apiUrl);
+                                if (newUrl) {
+                                    setApiUrl(newUrl);
+                                    localStorage.setItem('SI_API_URL', newUrl);
+                                    window.location.reload();
+                                }
+                            }}
+                            className="text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-indigo-300 flex items-center gap-2"
+                        >
+                            <RefreshCw className="w-3 h-3" />
+                            Direct Override
+                        </button>
+                    </div>
                     <div className="space-y-3">
                         <div className="flex justify-between items-center py-2 border-b border-white/5">
                             <span className="text-slate-500 text-sm">API Endpoint</span>
-                            <span className="text-slate-300 text-sm font-mono">{apiUrl}</span>
+                            <span className={`text-sm font-mono ${isConnected === false ? 'text-red-400' : 'text-slate-300'}`}>
+                                {apiUrl}
+                            </span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-white/5">
+                            <span className="text-slate-500 text-sm">Health Status</span>
+                            <span className={`text-sm font-mono ${isConnected ? 'text-emerald-400' : isConnected === false ? 'text-red-400' : 'text-slate-500'}`}>
+                                {isConnected ? 'ONLINE' : isConnected === false ? 'OFFLINE' : 'CHECKING...'}
+                            </span>
                         </div>
                         <div className="flex justify-between items-center py-2 border-b border-white/5">
                             <span className="text-slate-500 text-sm">Scrape Status</span>
@@ -276,6 +340,24 @@ export default function AdminPage() {
                             <span className="text-slate-300 text-sm font-mono">{scrapeStatus.current_step || 'N/A'}</span>
                         </div>
                     </div>
+                </div>
+
+                <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-3xl p-8">
+                    <h3 className="text-indigo-300 font-bold text-sm mb-4">Troubleshooting Tips</h3>
+                    <ul className="space-y-3 text-xs text-slate-500 leading-relaxed">
+                        <li className="flex gap-3">
+                            <span className="text-indigo-500 font-bold">01</span>
+                            <span>Verify that the backend service is active and hasn't spun down.</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="text-indigo-500 font-bold">02</span>
+                            <span>Ensure the <strong>ADMIN_KEY</strong> on the server matches the one you entered.</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="text-indigo-500 font-bold">03</span>
+                            <span>If you see "Waiting for Signal" indefinitely, click the Direct Override button above to manually set the API URL.</span>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </main>

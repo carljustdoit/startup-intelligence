@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from models import Company, Founder
 from bs4 import BeautifulSoup
 
+from logs import add_scrape_log
+
 class EnrichmentService:
     def __init__(self, db: Session):
         self.db = db
@@ -11,9 +13,9 @@ class EnrichmentService:
     async def enrich_company(self, company_id: int):
         company = self.db.query(Company).filter(Company.id == company_id).first()
         if not company or not company.website:
-            return
+            return False
 
-        print(f"Enriching company: {company.name} ({company.website})")
+        add_scrape_log(f"Enriching: {company.name} ({company.website})")
         
         try:
             resp = requests.get(
@@ -41,13 +43,17 @@ class EnrichmentService:
                 company.description = meta_desc or title
 
             self.db.commit()
-            print(f"Enriched {company.name} with meta data.")
+            return True
 
         except Exception as e:
-            print(f"Error enriching {company.name}: {e}")
+            add_scrape_log(f"Error enriching {company.name}: {e}")
+            return False
 
     async def enrich_all_new(self):
         # Find companies with no description
         companies = self.db.query(Company).filter(Company.description == None).all()
+        count = 0
         for company in companies:
-            await self.enrich_company(company.id)
+            if await self.enrich_company(company.id):
+                count += 1
+        return count

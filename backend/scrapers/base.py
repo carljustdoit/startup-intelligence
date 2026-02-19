@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 from sqlalchemy.orm import Session
 from models import Company
+from logs import add_scrape_log
 
 class BaseScraper(ABC):
     def __init__(self, db: Session):
@@ -19,10 +20,10 @@ class BaseScraper(ABC):
 
     async def run(self):
         """Main execution method."""
-        print(f"Starting {self.__class__.__name__}...")
+        add_scrape_log(f"Starting {self.__class__.__name__}...")
         try:
             data = await self.fetch_data()
             await self.process_data(data)
-            print(f"Finished {self.__class__.__name__}.")
+            add_scrape_log(f"Finished {self.__class__.__name__}.")
         except Exception as e:
-            print(f"Error running {self.__class__.__name__}: {e}")
+            add_scrape_log(f"Error running {self.__class__.__name__}: {e}")

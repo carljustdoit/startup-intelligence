@@ -11,6 +11,7 @@ from scrapers.yc_scraper import YCScraper
 from scrapers.startx_scraper import StartXScraper
 from scrapers.av_scraper import AVScraper
 from enricher import EnrichmentService
+from logs import add_scrape_log, SCRAPE_LOGS
 
 # Create tables
 models.Base.metadata.create_all(bind=engine)
@@ -58,24 +59,13 @@ SCRAPE_STATUS = {
     "last_run": None
 }
 
-SCRAPE_LOGS = []
-
-def add_scrape_log(message: str):
-    timestamp = datetime.now().strftime("%H:%M:%S")
-    log_entry = f"[{timestamp}] {message}"
-    SCRAPE_LOGS.append(log_entry)
-    # Keep only the last 200 logs to prevent memory issues
-    if len(SCRAPE_LOGS) > 200:
-        SCRAPE_LOGS.pop(0)
-    print(log_entry) # Also print to console
-
 async def run_scrapers_task():
-    global SCRAPE_STATUS, SCRAPE_LOGS
+    global SCRAPE_STATUS
     db = SessionLocal()
     SCRAPE_STATUS["is_running"] = True
     SCRAPE_STATUS["progress"] = 0
     SCRAPE_STATUS["last_run"] = datetime.now().isoformat()
-    SCRAPE_LOGS = [] # Reset logs for New Harvest
+    SCRAPE_LOGS.clear() # Reset global logs for New Harvest
     
     add_scrape_log("🚀 Initializing Intel Harvest protocol...")
     try:
