@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import CompanyCard from '../components/CompanyCard';
-import { Search, SlidersHorizontal, LayoutGrid, List, BarChart3 } from 'lucide-react';
+import { Search, SlidersHorizontal, LayoutGrid, List, BarChart3, Shield, Zap } from 'lucide-react';
 
 interface Company {
   id: number;
@@ -28,6 +28,7 @@ interface Company {
 export default function Home() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
+  const [scrapeStatus, setScrapeStatus] = useState({ is_running: false, progress: 0, current_step: "", last_run: null });
   const [search, setSearch] = useState('');
   const [source, setSource] = useState('All');
   const [page, setPage] = useState(1);
@@ -76,9 +77,26 @@ export default function Home() {
     }
   };
 
+  const fetchScrapeStatus = async () => {
+    try {
+      const res = await fetchWithTimeout(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/scrape/status`);
+      const data = await res.json();
+      setScrapeStatus(data);
+      if (data.is_running) {
+        setTimeout(fetchScrapeStatus, 2000);
+      }
+    } catch (error) {
+      console.error("Status check error:", error);
+    }
+  };
+
   useEffect(() => {
     fetchCompanies();
   }, [search, source, sortBy, order, page]);
+
+  useEffect(() => {
+    fetchScrapeStatus();
+  }, []);
 
   const handleSort = (column: string) => {
     if (sortBy === column) {
@@ -123,8 +141,37 @@ export default function Home() {
                 <BarChart3 className="w-4 h-4 text-indigo-500" />
                 Ecosystem Metrics
               </Link>
+              <Link
+                href="/admin"
+                className="px-8 py-4 glass glass-hover rounded-2.5xl text-slate-900 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 border-slate-200"
+              >
+                <Shield className="w-4 h-4 text-indigo-500" />
+                Admin Console
+              </Link>
             </div>
           </div>
+
+          {/* Scrape Progress (Read-Only for Public) */}
+          {scrapeStatus.is_running && (
+            <div className="mt-16 max-w-2xl mx-auto px-4">
+              <div className="glass p-10 rounded-[2.5rem] border-indigo-100 shadow-xl bg-white/60">
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em]">Harvest In Progress</span>
+                    <span className="text-slate-900 font-bold">{scrapeStatus.current_step}</span>
+                  </div>
+                  <span className="text-3xl font-black text-slate-900">{scrapeStatus.progress}%</span>
+                </div>
+                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200 p-[2px]">
+                  <div
+                    className="bg-indigo-600 h-full rounded-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(99,102,241,0.3)]"
+                    style={{ width: `${scrapeStatus.progress}%` }}
+                  ></div>
+                </div>
+                <p className="mt-6 text-center text-slate-500 text-xs font-medium">The intelligence pool is currently being synchronized. Data will appear once the harvest completes.</p>
+              </div>
+            </div>
+          )}
 
           {/* Controls */}
           <div className="mt-20 flex flex-col md:flex-row gap-4 p-3 bg-white/60 rounded-[3rem] border border-slate-200 backdrop-blur-2xl shadow-sm">
@@ -193,9 +240,15 @@ export default function Home() {
           <>
             {companies.length === 0 ? (
               <div className="text-center py-32 glass rounded-[3rem] border-dashed border-slate-200 bg-white/40">
-                <div className="text-5xl mb-8 grayscale opacity-50">📡</div>
-                <h3 className="text-2xl font-black text-slate-900 mb-2">Null Sector Signal</h3>
-                <p className="text-slate-400 font-medium">Reset your parameters to restore environmental telemetry.</p>
+                <div className="text-5xl mb-8 grayscale opacity-50">{scrapeStatus.is_running ? '🛰️' : '📡'}</div>
+                <h3 className="text-2xl font-black text-slate-900 mb-2">
+                  {scrapeStatus.is_running ? 'Synchronizing Intelligence Stream' : 'Null Sector Signal'}
+                </h3>
+                <p className="text-slate-500 font-medium max-w-sm mx-auto">
+                  {scrapeStatus.is_running
+                    ? `Our scanners are currently harvesting new startup signals (${scrapeStatus.progress}% complete). Please stand by...`
+                    : 'No intelligence found for these parameters. Reset your filters to restore environmental telemetry.'}
+                </p>
               </div>
             ) : (
               <>
