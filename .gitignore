@@ -1,5 +1,5 @@
 # Database
-startup_intelligence.db
+# startup_intelligence.db (No longer ignored to persist data)
 
 # Python
 backend/venv/
