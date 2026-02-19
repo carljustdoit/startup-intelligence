@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Shield, Target, Users, BarChart, Globe, Linkedin, ArrowLeft, ExternalLink } from 'lucide-react';
+import SynthesisStatus from '@/components/SynthesisStatus';
 
 interface Founder {
     id: number;
@@ -39,7 +40,7 @@ export default function CompanyDetail() {
     useEffect(() => {
         const fetchCompany = async () => {
             try {
-                const res = await fetch(`http://localhost:8000/companies/${id}`);
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/companies/${id}`);
                 if (res.ok) {
                     const data = await res.json();
                     setCompany(data);
@@ -113,9 +114,15 @@ export default function CompanyDetail() {
                                         <h1 className="text-6xl md:text-8xl font-black text-slate-900 tracking-tighter leading-none">
                                             {company.name}
                                         </h1>
-                                        <p className="text-2xl text-gradient font-bold italic opacity-90 leading-tight">
-                                            "{company.one_liner || "Environmental assessment in progress."}"
-                                        </p>
+                                        <div className="pt-2">
+                                            {company.one_liner ? (
+                                                <p className="text-2xl text-gradient font-bold italic opacity-90 leading-tight">
+                                                    "{company.one_liner}"
+                                                </p>
+                                            ) : (
+                                                <SynthesisStatus label="Environmental Assessment In Progress" />
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -131,7 +138,13 @@ export default function CompanyDetail() {
                                     </h2>
                                     <div className="bg-slate-100/50 p-10 rounded-[3rem] text-slate-700 leading-relaxed font-medium text-xl border border-slate-100 italic relative overflow-hidden">
                                         <Shield className="absolute top-0 right-0 p-8 text-slate-200 w-32 h-32 opacity-20 pointer-events-none" />
-                                        <p className="relative z-10">{company.problem || "Accessing proprietary strategy set..."}</p>
+                                        {company.problem ? (
+                                            <p className="relative z-10">{company.problem}</p>
+                                        ) : (
+                                            <div className="relative z-10">
+                                                <SynthesisStatus label="Accessing Proprietary Strategy Set..." />
+                                            </div>
+                                        )}
                                     </div>
                                 </section>
 
@@ -140,9 +153,13 @@ export default function CompanyDetail() {
                                         <BarChart className="w-4 h-4 text-indigo-500" />
                                         Briefing Overview
                                     </h2>
-                                    <p className="text-slate-500 leading-loose text-lg font-medium">
-                                        {company.description || "Aggregating full forensics profile from global signals..."}
-                                    </p>
+                                    {company.description ? (
+                                        <p className="text-slate-500 leading-loose text-lg font-medium">
+                                            {company.description}
+                                        </p>
+                                    ) : (
+                                        <SynthesisStatus label="Aggregating Full Forensics Profile..." />
+                                    )}
                                 </section>
 
                                 <section>

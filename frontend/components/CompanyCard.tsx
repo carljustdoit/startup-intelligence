@@ -1,5 +1,6 @@
 import React from 'react';
 import { ExternalLink, Globe } from 'lucide-react';
+import SynthesisStatus from './SynthesisStatus';
 
 interface Company {
   id: number;
@@ -44,8 +45,8 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company }) => {
           </div>
 
           <span className={`text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-[0.2em] border shadow-sm ${company.source === 'YC' ? 'bg-orange-50 text-orange-600 border-orange-200' :
-              company.source === 'StartX' ? 'bg-cyan-50 text-cyan-600 border-cyan-200' :
-                'bg-purple-50 text-purple-600 border-purple-200'
+            company.source === 'StartX' ? 'bg-cyan-50 text-cyan-600 border-cyan-200' :
+              'bg-purple-50 text-purple-600 border-purple-200'
             }`}>
             {company.source}
           </span>
@@ -69,9 +70,15 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company }) => {
           </a>
         )}
 
-        <p className="text-slate-500 text-sm font-medium line-clamp-2 leading-relaxed mb-8 opacity-80 group-hover:opacity-100 transition-opacity">
-          {company.one_liner || "Strategic intelligence synthesis in progress."}
-        </p>
+        {company.one_liner ? (
+          <p className="text-slate-500 text-sm font-medium line-clamp-2 leading-relaxed mb-8 opacity-80 group-hover:opacity-100 transition-opacity">
+            {company.one_liner}
+          </p>
+        ) : (
+          <div className="mb-8">
+            <SynthesisStatus />
+          </div>
+        )}
       </div>
 
       <div>

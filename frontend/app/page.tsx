@@ -36,6 +36,7 @@ export default function Home() {
   const [order, setOrder] = useState<'asc' | 'desc'>('desc');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [scrapeStatus, setScrapeStatus] = useState({ is_running: false, progress: 0, current_step: "", last_run: null });
+  const [error, setError] = useState<string | null>(null);
 
   const fetchCompanies = async () => {
     setLoading(true);
@@ -49,12 +50,15 @@ export default function Home() {
       if (search) params.append('search', search);
       if (source !== 'All') params.append('source', source);
 
-      const res = await fetch(`http://localhost:8000/companies?${params.toString()}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/companies?${params.toString()}`);
+      if (!res.ok) throw new Error(`API Error: ${res.status}`);
       const data = await res.json();
       setCompanies(data.items);
       setTotalPages(data.pages);
+      setError(null);
     } catch (error) {
       console.error("Fetch error:", error);
+      setError("Unable to synchronize with intelligence stream. Verify backend connectivity and CORS settings.");
     } finally {
       setLoading(false);
     }
@@ -62,7 +66,7 @@ export default function Home() {
 
   const fetchScrapeStatus = async () => {
     try {
-      const res = await fetch('http://localhost:8000/scrape/status');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/scrape/status`);
       const data = await res.json();
       setScrapeStatus(data);
       if (data.is_running) {
@@ -92,10 +96,13 @@ export default function Home() {
 
   const handleRefresh = async () => {
     try {
-      await fetch('http://localhost:8000/scrape', { method: 'POST' });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/scrape`, { method: 'POST' });
+      if (!res.ok) throw new Error(`Pulse Sync Failed: ${res.status}`);
       fetchScrapeStatus();
+      setError(null);
     } catch (error) {
       console.error("Refresh error:", error);
+      setError("Intelligence Harvest Link Severed. Verify backend status and CORS configuration.");
     }
   };
 
@@ -215,6 +222,17 @@ export default function Home() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {error && (
+          <div className="mb-12 p-8 glass border-red-200 bg-red-50/50 rounded-[2.5rem] flex items-center gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+              <Zap className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="font-black text-red-900 uppercase tracking-tight">Connectivity Interrupted</h3>
+              <p className="text-red-600/80 font-medium text-sm mt-1">{error}</p>
+            </div>
+          </div>
+        )}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-40">
             <div className="w-12 h-12 border-t-2 border-r-2 border-indigo-600 rounded-full animate-spin mb-8"></div>
@@ -344,6 +362,16 @@ export default function Home() {
             )}
           </>
         )}
+      </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 border-t border-slate-100 pt-8">
+        <div className="flex justify-between items-center opacity-30 hover:opacity-100 transition-opacity">
+          <div className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-400">
+            Node: {process.env.NODE_ENV} | API: {process.env.NEXT_PUBLIC_API_URL || 'local-host'}
+          </div>
+          <div className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-400">
+            Startup Intelligence v4.2.1-PROD
+          </div>
+        </div>
       </div>
     </main>
   );

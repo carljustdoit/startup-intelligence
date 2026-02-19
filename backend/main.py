@@ -17,13 +17,25 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Startup Intelligence Platform API")
 
-# CORS
+import os
+
+# CORS Configuration
+# Allow local development, your Mac's IP, and the production Vercel URL
+default_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://192.168.0.110:3000",
+]
+env_origins = os.getenv("ALLOWED_ORIGINS", "").split(",")
+allowed_origins = [origin.strip() for origin in env_origins if origin.strip()] + default_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow all for development
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Dependency

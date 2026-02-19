@@ -182,7 +182,7 @@ export default function Analytics() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await fetch('http://localhost:8000/analytics');
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/analytics`);
                 const result = await res.json();
                 setData(result);
             } catch (error) {
@@ -198,7 +198,7 @@ export default function Analytics() {
         try {
             // For simplicity, we search by label
             const params = new URLSearchParams({ size: '100', search: label });
-            const res = await fetch(`http://localhost:8000/companies?${params.toString()}`);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/companies?${params.toString()}`);
             const result = await res.json();
 
             let filtered = [];
