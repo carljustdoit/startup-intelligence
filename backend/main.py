@@ -58,41 +58,64 @@ SCRAPE_STATUS = {
     "last_run": None
 }
 
+SCRAPE_LOGS = []
+
+def add_scrape_log(message: str):
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    log_entry = f"[{timestamp}] {message}"
+    SCRAPE_LOGS.append(log_entry)
+    # Keep only the last 200 logs to prevent memory issues
+    if len(SCRAPE_LOGS) > 200:
+        SCRAPE_LOGS.pop(0)
+    print(log_entry) # Also print to console
+
 async def run_scrapers_task():
-    global SCRAPE_STATUS
+    global SCRAPE_STATUS, SCRAPE_LOGS
     db = SessionLocal()
     SCRAPE_STATUS["is_running"] = True
     SCRAPE_STATUS["progress"] = 0
     SCRAPE_STATUS["last_run"] = datetime.now().isoformat()
+    SCRAPE_LOGS = [] # Reset logs for New Harvest
     
+    add_scrape_log("🚀 Initializing Intel Harvest protocol...")
     try:
         # 1. YC Scraper
+        add_scrape_log("🔍 Phase 1: Harvesting YC Network...")
         SCRAPE_STATUS["current_step"] = "Scraping YC Batches..."
         yc = YCScraper(db, batches=["Summer 2024"])
-        await yc.run()
+        yc_data = await yc.run()
+        add_scrape_log(f"✅ Found {len(yc_data) if yc_data else 0} YC startups.")
         SCRAPE_STATUS["progress"] = 25
         
         # 2. StartX Scraper
+        add_scrape_log("🔍 Phase 2: Interfacing with StartX Ecosystem...")
         SCRAPE_STATUS["current_step"] = "Scraping StartX..."
         startx = StartXScraper(db)
-        await startx.run()
+        sx_data = await startx.run()
+        add_scrape_log(f"✅ Synced {len(sx_data) if sx_data else 0} StartX profiles.")
         SCRAPE_STATUS["progress"] = 50
         
         # 3. AV Scraper
+        add_scrape_log("🔍 Phase 3: Crawling Alumni Ventures Portfolio...")
         SCRAPE_STATUS["current_step"] = "Scraping Alumni Ventures..."
         av = AVScraper(db)
-        await av.run()
+        av_data = await av.run()
+        add_scrape_log(f"✅ Retreived {len(av_data) if av_data else 0} AV portfolio entries.")
         SCRAPE_STATUS["progress"] = 75
         
         # 4. Enrichment
+        add_scrape_log("🧠 Phase 4: Initializing AI Synthesis & Enrichment...")
         SCRAPE_STATUS["current_step"] = "Enriching Metadata..."
         enricher = EnrichmentService(db)
-        await enricher.enrich_all_new()
+        enriched_count = await enricher.enrich_all_new()
+        add_scrape_log(f"✨ Successfully enriched {enriched_count} entities with deep metadata.")
+        
         SCRAPE_STATUS["progress"] = 100
         SCRAPE_STATUS["current_step"] = "Complete"
+        add_scrape_log("🏁 Harvest protocol complete. Intelligence pool synchronized.")
         
     except Exception as e:
-        print(f"Error in background scrapers: {e}")
+        add_scrape_log(f"❌ CRITICAL ERROR: {str(e)}")
         SCRAPE_STATUS["current_step"] = f"Error: {str(e)}"
     finally:
         SCRAPE_STATUS["is_running"] = False
@@ -105,6 +128,10 @@ def read_root():
 @app.get("/scrape/status")
 def get_scrape_status():
     return SCRAPE_STATUS
+
+@app.get("/scrape/logs")
+def get_scrape_logs():
+    return {"logs": SCRAPE_LOGS}
 
 @app.post("/scrape")
 async def trigger_scrape(background_tasks: BackgroundTasks, admin_key: str = Query(None)):

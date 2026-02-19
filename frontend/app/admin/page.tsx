@@ -2,15 +2,29 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Shield, Zap, ArrowLeft, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Shield, Zap, ArrowLeft, CheckCircle, XCircle, Loader2, Terminal } from 'lucide-react';
+import { useRef } from 'react';
+import { useEffect as useReactEffect } from 'react';
 
 export default function AdminPage() {
     const [adminKey, setAdminKey] = useState('');
     const [authenticated, setAuthenticated] = useState(false);
     const [scrapeStatus, setScrapeStatus] = useState({ is_running: false, progress: 0, current_step: "", last_run: null as string | null });
+    const [logs, setLogs] = useState<string[]>([]);
     const [message, setMessage] = useState<string | null>(null);
+    const logContainerRef = useRef<HTMLDivElement>(null);
     const [error, setError] = useState<string | null>(null);
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+    const fetchScrapeLogs = async () => {
+        try {
+            const res = await fetch(`${apiUrl}/scrape/logs`);
+            const data = await res.json();
+            setLogs(data.logs || []);
+        } catch {
+            // silent fail
+        }
+    };
 
     const fetchScrapeStatus = async () => {
         try {
@@ -18,6 +32,7 @@ export default function AdminPage() {
             const data = await res.json();
             setScrapeStatus(data);
             if (data.is_running) {
+                fetchScrapeLogs();
                 setTimeout(fetchScrapeStatus, 2000);
             }
         } catch {
@@ -36,8 +51,18 @@ export default function AdminPage() {
     }, []);
 
     useEffect(() => {
-        if (authenticated) fetchScrapeStatus();
+        if (authenticated) {
+            fetchScrapeStatus();
+            fetchScrapeLogs(); // Initial log fetch
+        }
     }, [authenticated]);
+
+    // Auto-scroll logs
+    useEffect(() => {
+        if (logContainerRef.current) {
+            logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+        }
+    }, [logs]);
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
@@ -145,8 +170,8 @@ export default function AdminPage() {
                             onClick={handleScrape}
                             disabled={scrapeStatus.is_running}
                             className={`px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-all ${scrapeStatus.is_running
-                                    ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                                    : 'bg-indigo-600 text-white hover:bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/20'
+                                ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                                : 'bg-indigo-600 text-white hover:bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/20'
                                 }`}
                         >
                             <Zap className={`w-4 h-4 ${scrapeStatus.is_running ? 'animate-pulse' : ''}`} />
@@ -178,6 +203,44 @@ export default function AdminPage() {
                             Last run: {new Date(scrapeStatus.last_run).toLocaleString()}
                         </div>
                     )}
+                </div>
+
+                {/* Live Logs - Streaming Event Logs */}
+                <div className="bg-slate-900/80 border border-white/10 rounded-3xl overflow-hidden mb-6 shadow-2xl">
+                    <div className="px-6 py-4 bg-slate-800/50 border-b border-white/5 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Terminal className="w-4 h-4 text-emerald-400" />
+                            <h3 className="text-white font-bold text-xs uppercase tracking-[0.2em]">Live Intelligence Stream</h3>
+                        </div>
+                        <div className="flex gap-1.5 font-mono text-[10px]">
+                            <span className="w-2.5 h-2.5 rounded-full bg-red-500/30 border border-red-500/50"></span>
+                            <span className="w-2.5 h-2.5 rounded-full bg-amber-500/30 border border-amber-500/50"></span>
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/30 border border-emerald-500/50"></span>
+                        </div>
+                    </div>
+                    <div
+                        ref={logContainerRef}
+                        className="p-6 h-[300px] overflow-y-auto font-mono text-[13px] leading-relaxed scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
+                    >
+                        {logs.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center h-full text-slate-600 gap-3">
+                                <div className="w-8 h-8 border border-white/10 rounded-lg flex items-center justify-center grayscale opacity-50">📡</div>
+                                <span className="text-[10px] uppercase tracking-widest font-black">Waiting for signal...</span>
+                            </div>
+                        ) : (
+                            <div className="space-y-1.5">
+                                {logs.map((log, idx) => {
+                                    const isPhase = log.includes('Phase') || log.includes('Initializing') || log.includes('complete');
+                                    const isError = log.includes('ERROR') || log.includes('❌');
+                                    return (
+                                        <div key={idx} className={`${isPhase ? 'text-indigo-400 font-bold mt-4 mb-2' : isError ? 'text-red-400 bg-red-400/5 px-2 py-1 rounded' : 'text-slate-400'}`}>
+                                            {log}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Messages */}
