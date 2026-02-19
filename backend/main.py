@@ -110,12 +110,14 @@ async def trigger_scrape(background_tasks: BackgroundTasks):
     background_tasks.add_task(run_scrapers_task)
     return {"message": "Scraping started in background"}
 
+import anyio
+
 @app.get("/analytics")
-def get_analytics(db: Session = Depends(get_db)):
+async def get_analytics(db: Session = Depends(get_db)):
     from sqlalchemy import extract
     import re
 
-    companies = db.query(models.Company).all()
+    companies = await anyio.to_thread.run_sync(lambda: db.query(models.Company).all())
     
     # Process analytics: Vertical x Year
     # Vertical comes from industry. Year needs to be extracted from batch or founded_at.
@@ -211,8 +213,8 @@ async def get_companies(
     else:
         query = query.order_by(nullslast(sort_attr.desc()))
         
-    total = query.count()
-    items = query.offset((page - 1) * size).limit(size).all()
+    total = await anyio.to_thread.run_sync(query.count)
+    items = await anyio.to_thread.run_sync(lambda: query.offset((page - 1) * size).limit(size).all())
     
     return {
         "items": items,
@@ -223,8 +225,8 @@ async def get_companies(
     }
 
 @app.get("/companies/{company_id}", response_model=schemas.Company)
-def read_company(company_id: int, db: Session = Depends(get_db)):
-    company = db.query(models.Company).filter(models.Company.id == company_id).first()
+async def read_company(company_id: int, db: Session = Depends(get_db)):
+    company = await anyio.to_thread.run_sync(lambda: db.query(models.Company).filter(models.Company.id == company_id).first())
     if company is None:
         raise HTTPException(status_code=404, detail="Company not found")
     return company

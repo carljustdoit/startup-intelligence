@@ -38,6 +38,19 @@ export default function Home() {
   const [scrapeStatus, setScrapeStatus] = useState({ is_running: false, progress: 0, current_step: "", last_run: null });
   const [error, setError] = useState<string | null>(null);
 
+  const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = 10000) => {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    try {
+      const response = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(id);
+      return response;
+    } catch (e) {
+      clearTimeout(id);
+      throw e;
+    }
+  };
+
   const fetchCompanies = async () => {
     setLoading(true);
     try {
@@ -50,7 +63,7 @@ export default function Home() {
       if (search) params.append('search', search);
       if (source !== 'All') params.append('source', source);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/companies?${params.toString()}`);
+      const res = await fetchWithTimeout(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/companies?${params.toString()}`);
       if (!res.ok) throw new Error(`API Error: ${res.status}`);
       const data = await res.json();
       setCompanies(data.items);
@@ -66,7 +79,7 @@ export default function Home() {
 
   const fetchScrapeStatus = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/scrape/status`);
+      const res = await fetchWithTimeout(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/scrape/status`);
       const data = await res.json();
       setScrapeStatus(data);
       if (data.is_running) {
@@ -96,7 +109,7 @@ export default function Home() {
 
   const handleRefresh = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/scrape`, { method: 'POST' });
+      const res = await fetchWithTimeout(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/scrape`, { method: 'POST' });
       if (!res.ok) throw new Error(`Pulse Sync Failed: ${res.status}`);
       fetchScrapeStatus();
       setError(null);
