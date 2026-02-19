@@ -107,7 +107,10 @@ def get_scrape_status():
     return SCRAPE_STATUS
 
 @app.post("/scrape")
-async def trigger_scrape(background_tasks: BackgroundTasks):
+async def trigger_scrape(background_tasks: BackgroundTasks, admin_key: str = Query(None)):
+    expected_key = os.getenv("ADMIN_KEY", "changeme")
+    if admin_key != expected_key:
+        raise HTTPException(status_code=403, detail="Unauthorized. Invalid admin key.")
     if SCRAPE_STATUS["is_running"]:
         return {"message": "Scrape already in progress"}
     background_tasks.add_task(run_scrapers_task)

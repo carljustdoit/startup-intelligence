@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import CompanyCard from '../components/CompanyCard';
-import { Search, SlidersHorizontal, LayoutGrid, List, Zap, BarChart3 } from 'lucide-react';
+import { Search, SlidersHorizontal, LayoutGrid, List, BarChart3 } from 'lucide-react';
 
 interface Company {
   id: number;
@@ -35,7 +35,6 @@ export default function Home() {
   const [sortBy, setSortBy] = useState('id');
   const [order, setOrder] = useState<'asc' | 'desc'>('desc');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
-  const [scrapeStatus, setScrapeStatus] = useState({ is_running: false, progress: 0, current_step: "", last_run: null });
   const [error, setError] = useState<string | null>(null);
 
   const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = 10000) => {
@@ -77,26 +76,9 @@ export default function Home() {
     }
   };
 
-  const fetchScrapeStatus = async () => {
-    try {
-      const res = await fetchWithTimeout(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/scrape/status`);
-      const data = await res.json();
-      setScrapeStatus(data);
-      if (data.is_running) {
-        setTimeout(fetchScrapeStatus, 2000);
-      }
-    } catch (error) {
-      console.error("Status check error:", error);
-    }
-  };
-
   useEffect(() => {
     fetchCompanies();
   }, [search, source, sortBy, order, page]);
-
-  useEffect(() => {
-    fetchScrapeStatus();
-  }, []);
 
   const handleSort = (column: string) => {
     if (sortBy === column) {
@@ -104,18 +86,6 @@ export default function Home() {
     } else {
       setSortBy(column);
       setOrder('desc');
-    }
-  };
-
-  const handleRefresh = async () => {
-    try {
-      const res = await fetchWithTimeout(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/scrape`, { method: 'POST' });
-      if (!res.ok) throw new Error(`Pulse Sync Failed: ${res.status}`);
-      fetchScrapeStatus();
-      setError(null);
-    } catch (error) {
-      console.error("Refresh error:", error);
-      setError(`Harvest Link Blocked: ${error instanceof Error ? error.message : "Unknown connectivity issue"}. Check CORS settings or Backend status.`);
     }
   };
 
@@ -153,40 +123,8 @@ export default function Home() {
                 <BarChart3 className="w-4 h-4 text-indigo-500" />
                 Ecosystem Metrics
               </Link>
-              <button
-                onClick={handleRefresh}
-                disabled={scrapeStatus.is_running}
-                className={`px-8 py-4 rounded-2.5xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 transition-all border shadow-sm ${scrapeStatus.is_running
-                  ? 'bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed'
-                  : 'bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-700 hover:shadow-indigo-200 hover:translate-y-[-2px]'
-                  }`}
-              >
-                <Zap className={`w-4 h-4 ${scrapeStatus.is_running ? 'animate-pulse' : ''}`} />
-                {scrapeStatus.is_running ? 'Syncing Intelligence...' : 'Initiate Intel Harvest'}
-              </button>
             </div>
           </div>
-
-          {/* Scrape Progress */}
-          {scrapeStatus.is_running && (
-            <div className="mt-16 max-w-2xl mx-auto px-4">
-              <div className="glass p-10 rounded-[2.5rem] border-indigo-100 shadow-xl bg-white/60">
-                <div className="flex justify-between items-center mb-6">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em]">Stream Status</span>
-                    <span className="text-slate-900 font-bold">{scrapeStatus.current_step}</span>
-                  </div>
-                  <span className="text-3xl font-black text-slate-900">{scrapeStatus.progress}%</span>
-                </div>
-                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200 p-[2px]">
-                  <div
-                    className="bg-indigo-600 h-full rounded-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(99,102,241,0.3)]"
-                    style={{ width: `${scrapeStatus.progress}%` }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Controls */}
           <div className="mt-20 flex flex-col md:flex-row gap-4 p-3 bg-white/60 rounded-[3rem] border border-slate-200 backdrop-blur-2xl shadow-sm">
@@ -238,7 +176,7 @@ export default function Home() {
         {error && (
           <div className="mb-12 p-8 glass border-red-200 bg-red-50/50 rounded-[2.5rem] flex items-center gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
             <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center text-red-600 shrink-0">
-              <Zap className="w-6 h-6" />
+              <span className="text-2xl">⚡</span>
             </div>
             <div>
               <h3 className="font-black text-red-900 uppercase tracking-tight">Connectivity Interrupted</h3>
