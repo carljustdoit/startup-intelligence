@@ -115,7 +115,7 @@ export default function Home() {
       setError(null);
     } catch (error) {
       console.error("Refresh error:", error);
-      setError("Intelligence Harvest Link Severed. Verify backend status and CORS configuration.");
+      setError(`Harvest Link Blocked: ${error instanceof Error ? error.message : "Unknown connectivity issue"}. Check CORS settings or Backend status.`);
     }
   };
 

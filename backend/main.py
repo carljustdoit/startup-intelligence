@@ -27,7 +27,10 @@ default_origins = [
     "http://192.168.0.110:3000",
 ]
 env_origins = os.getenv("ALLOWED_ORIGINS", "").split(",")
+# Use a more permissive set for production to handle Vercel preview URLs
 allowed_origins = [origin.strip() for origin in env_origins if origin.strip()] + default_origins
+if not os.getenv("ALLOWED_ORIGINS"):
+    allowed_origins.append("*")
 
 app.add_middleware(
     CORSMiddleware,
